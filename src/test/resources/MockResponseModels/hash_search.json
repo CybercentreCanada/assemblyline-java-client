@@ -1,0 +1,15 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "al": {
+      "error": null,
+      "items": []
+    },
+    "alert": {
+      "error": null,
+      "items": []
+    }
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

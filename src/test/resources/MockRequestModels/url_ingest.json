@@ -1,0 +1,17 @@
+{
+  "url": "/test/url.com",
+  "name": "meta data",
+  "metadata": {
+    "key": "value",
+    "key2": {
+      "field1": "test1",
+      "field2": "test2"
+    }
+  },
+  "params": {
+    "param1": "value1"
+  },
+  "generate_alert": true,
+  "notification_queue": "notificationQueue",
+  "notification_threshold": 100
+}

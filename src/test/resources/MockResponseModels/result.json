@@ -1,0 +1,60 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "archive_ts": "2021-02-24T18:15:13.377863Z",
+    "classification": "TLP:WHITE",
+    "created": "2021-02-19T18:15:13.377831Z",
+    "drop_file": false,
+    "expiry_ts": null,
+    "response": {
+      "extracted": [],
+      "milestones": {
+        "service_completed": "2021-02-19T18:15:13.377078Z",
+        "service_started": "2021-02-19T18:15:13.149844Z"
+      },
+      "service_context": null,
+      "service_debug_info": null,
+      "service_name": "Characterize",
+      "service_tool_version": null,
+      "service_version": "4.0.0.stable5",
+      "supplementary": []
+    },
+    "result": {
+      "score": 0,
+      "sections": [
+        {
+          "body": {
+            "data": {
+              "domain": [
+                0,
+                8
+              ],
+              "values": [
+                -0.0,-0.0,-0.0,-0.0,-0.0,-0.0,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                0,0,0,0,0,0,0,0,0,0,0,0
+              ]
+            },
+            "type": "colormap"
+          },
+          "body_format": "GRAPH_DATA",
+          "classification": "TLP:WHITE",
+          "depth": 0,
+          "heuristic": null,
+          "tags": [],
+          "title_text": "File entropy: 2.252"
+        }
+      ]
+    },
+    "section_hierarchy": [
+      {
+        "children": [],
+        "id": 0
+      }
+    ],
+    "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

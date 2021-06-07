@@ -1,0 +1,503 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "archive_ts": "2021-02-24T18:15:12.257136Z",
+    "classification": "TLP:WHITE",
+    "error_count": 0,
+    "errors": {},
+    "expiry_ts": null,
+    "file_count": 2,
+    "file_infos": {
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7": {
+        "archive_ts": "2021-02-24T18:15:12.770369Z",
+        "ascii": "Hello!",
+        "classification": "TLP:WHITE",
+        "entropy": 2.251629167387823,
+        "expiry_ts": null,
+        "hex": "48656c6c6f21",
+        "magic": "ASCII text, with no line terminators",
+        "md5": "952d2c56d0485958336747bcdd98590d",
+        "mime": "text/plain",
+        "seen": {
+          "count": 2,
+          "first": "2021-02-15T17:37:51.953004Z",
+          "last": "2021-02-19T18:15:12.770385Z"
+        },
+        "sha1": "69342c5c39e5ae5f0077aecc32c0f81811fb8193",
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+        "size": 6,
+        "ssdeep": "3:at:at",
+        "type": "unknown"
+      },
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36": {
+        "archive_ts": "2021-02-24T18:15:12.223811Z",
+        "ascii": "PK.........ESRV.*.............al_test.txtHello!PK..?........ESRV",
+        "classification": "TLP:WHITE",
+        "entropy": 4.245672537577632,
+        "expiry_ts": null,
+        "hex": "504b03040a0300000000bc45535256cc2a9d06000000060000000b000000616c5f746573742e74787448656c6c6f21504b01023f030a0300000000bc45535256",
+        "magic": "Zip archive data, at least v1.0 to extract",
+        "md5": "012858aaf7c7e26dc010d30508df84ff",
+        "mime": "application/zip",
+        "seen": {
+          "count": 1,
+          "first": "2021-02-19T18:15:12.223832Z",
+          "last": "2021-02-19T18:15:12.223832Z"
+        },
+        "sha1": "ca5c15bd3d88a7206ba4a1edfe1b42c47e1ff9b7",
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36",
+        "size": 162,
+        "ssdeep": "3:vh+5Fqllb8+QdwJKEkMvS/lpFqllbQBemQd5llmnTeagj39TeNt+lBlu/:5geW+QdwhgeCEmQdyiaAeP+lC/",
+        "type": "archive/zip"
+      }
+    },
+    "file_tree": {
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36": {
+        "children": {
+          "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7": {
+            "children": {},
+            "name": [
+              "al_test.txt"
+            ],
+            "score": 0,
+            "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+            "size": 6,
+            "truncated": false,
+            "type": "unknown"
+          }
+        },
+        "name": [
+          "al_test.zip"
+        ],
+        "score": 0,
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36",
+        "size": 162,
+        "truncated": false,
+        "type": "archive/zip"
+      }
+    },
+    "files": [
+      {
+        "name": "al_test.zip",
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36",
+        "size": 162
+      }
+    ],
+    "max_score": 0,
+    "metadata": {},
+    "missing_error_keys": [],
+    "missing_file_keys": [],
+    "missing_result_keys": [],
+    "params": {
+      "classification": "TLP:WHITE",
+      "deep_scan": false,
+      "description": "Inspection of file: al_test.zip",
+      "generate_alert": false,
+      "groups": [
+        "USERS"
+      ],
+      "ignore_cache": false,
+      "ignore_dynamic_recursion_prevention": false,
+      "ignore_filtering": false,
+      "ignore_size": false,
+      "initial_data": null,
+      "max_extracted": 500,
+      "max_supplementary": 500,
+      "never_drop": false,
+      "priority": 1000,
+      "profile": false,
+      "psid": null,
+      "quota_item": true,
+      "service_spec": {},
+      "services": {
+        "excluded": [],
+        "resubmit": [],
+        "runtime_excluded": [],
+        "selected": [
+          "Static Analysis",
+          "Extraction",
+          "Antivirus",
+          "Networking"
+        ]
+      },
+      "submitter": "username",
+      "ttl": 0,
+      "type": "USER"
+    },
+    "results": {
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM": {
+        "archive_ts": "2021-02-24T18:15:13.377863Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-19T18:15:13.377831Z",
+        "drop_file": false,
+        "expiry_ts": null,
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-19T18:15:13.377078Z",
+            "service_started": "2021-02-19T18:15:13.149844Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "Characterize",
+          "service_tool_version": null,
+          "service_version": "4.0.0.stable5",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": [
+            {
+              "body": {
+                "data": {
+                  "domain": [
+                    0,
+                    8
+                  ],
+                  "values": [
+                    -0.0,
+                    -0.0,
+                    -0.0,
+                    -0.0,
+                    -0.0,
+                    -0.0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                  ]
+                },
+                "type": "colormap"
+              },
+              "body_format": "GRAPH_DATA",
+              "classification": "TLP:WHITE",
+              "depth": 0,
+              "heuristic": null,
+              "tags": [],
+              "title_text": "File entropy: 2.252"
+            }
+          ]
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Codevector.v4_0_0_stable6.cDyOMFE1phHM.e": {
+        "archive_ts": "2021-02-28T14:39:09.615054Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.615096Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.615060Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.615177Z",
+            "service_started": "2021-02-23T14:39:09.615152Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "Codevector",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable6",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.ConfigExtractor.v4_0_1_stable15.cDyOMFE1phHM.e": {
+        "archive_ts": "2021-02-28T14:39:09.615282Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.615325Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.615288Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.615404Z",
+            "service_started": "2021-02-23T14:39:09.615380Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "ConfigExtractor",
+          "service_tool_version": null,
+          "service_version": "4_0_1_stable15",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.FrankenStrings.v4_0_0_stable3.cDyOMFE1phHM.e": {
+        "archive_ts": "2021-02-28T14:39:09.614364Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.614409Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.614370Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.614491Z",
+            "service_started": "2021-02-23T14:39:09.614465Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "FrankenStrings",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable3",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaDefender.v4_0_0_stable5.cB4MCKLVFawL.e": {
+        "archive_ts": "2021-02-28T14:39:09.613748Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.613863Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.613767Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.613968Z",
+            "service_started": "2021-02-23T14:39:09.613941Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "MetaDefender",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable5",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaPeek.v4_0_0_stable4.cDyOMFE1phHM.e": {
+        "archive_ts": "2021-02-28T14:39:09.614827Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.614870Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.614833Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.614949Z",
+            "service_started": "2021-02-23T14:39:09.614924Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "MetaPeek",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable4",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.TagCheck.v4_0_0_stable9.c5Mx9otMNWwr.e": {
+        "archive_ts": "2021-02-28T14:39:09.614121Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.614169Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.614128Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.614253Z",
+            "service_started": "2021-02-23T14:39:09.614228Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "TagCheck",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable9",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.VirusTotalCache.v4_0_1_stable7.c1waIr4vQjB5": {
+        "archive_ts": "2021-02-24T18:15:14.673617Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-19T18:15:14.673584Z",
+        "drop_file": false,
+        "expiry_ts": null,
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-19T18:15:14.672364Z",
+            "service_started": "2021-02-19T18:15:14.459308Z"
+          },
+          "service_context": "DB Checked: 2021-02-19 17:13:55 UTC",
+          "service_debug_info": null,
+          "service_name": "VirusTotalCache",
+          "service_tool_version": "DB Checked: 2021-02-19 15:56:31 UTC",
+          "service_version": "4.0.1.stable7",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": [
+            {
+              "body": {
+                "Community Reputation": 50,
+                "First Seen": "2010-03-11 17:04:01",
+                "Last Seen": "2021-01-18 04:26:30",
+                "Permalink": "https://www.virustotal.com/gui/file/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+                "Scan Date": "2021-01-18 04:26:30"
+              },
+              "body_format": "KEY_VALUE",
+              "classification": "TLP:WHITE",
+              "depth": 0,
+              "heuristic": null,
+              "tags": [],
+              "title_text": "vt_test_file.txt"
+            }
+          ]
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.YARA.v4_0_0_stable9.c5Mx9otMNWwr.e": {
+        "archive_ts": "2021-02-28T14:39:09.614598Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-23T14:39:09.614641Z",
+        "drop_file": false,
+        "expiry_ts": "2021-02-28T14:39:09.614604Z",
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-23T14:39:09.614721Z",
+            "service_started": "2021-02-23T14:39:09.614697Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "YARA",
+          "service_tool_version": null,
+          "service_version": "4_0_0_stable9",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": []
+        },
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36.Extract.v4_0_0_stable9.c2i2PqguInqd": {
+        "archive_ts": "2021-02-24T18:15:12.666435Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-19T18:15:12.666411Z",
+        "drop_file": true,
+        "expiry_ts": null,
+        "response": {
+          "extracted": [
+            {
+              "classification": "TLP:WHITE",
+              "description": "zip",
+              "name": "al_test.txt",
+              "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+            }
+          ],
+          "milestones": {
+            "service_completed": "2021-02-19T18:15:12.598722Z",
+            "service_started": "2021-02-19T18:15:12.589947Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "Extract",
+          "service_tool_version": null,
+          "service_version": "4.0.0.stable9",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": [
+            {
+              "body": null,
+              "body_format": "TEXT",
+              "classification": "TLP:WHITE",
+              "depth": 0,
+              "heuristic": {
+                "attack": [],
+                "heur_id": "EXTRACT.1",
+                "name": "Extracted from archive",
+                "score": 0,
+                "signature": []
+              },
+              "tags": [],
+              "title_text": "Successfully extracted 1 files"
+            }
+          ]
+        },
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36"
+      }
+    },
+    "sid": "3p9RPMzkoYJ1p4vfdZj6B0",
+    "state": "completed",
+    "times": {
+      "completed": "2021-02-19T18:15:15.129742Z",
+      "submitted": "2021-02-19T18:15:12.257298Z"
+    },
+    "verdict": {
+      "malicious": [],
+      "non_malicious": [
+        "username"
+      ]
+    }
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

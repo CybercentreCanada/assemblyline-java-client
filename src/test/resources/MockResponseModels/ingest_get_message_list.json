@@ -1,0 +1,72 @@
+{
+  "api_error_message": "",
+  "api_response": [
+    {
+      "extended_scan": "skipped",
+      "failure": "",
+      "ingest_id": "4gI9ndesxMbQVRa1OWB5CJ",
+      "ingest_time": "2021-03-04T21:23:00.358435Z",
+      "retries": 0,
+      "scan_key": "f985350201a0ad7ffec89c171140d0c6v1",
+      "score": 0,
+      "submission": {
+        "files": [
+          {
+            "name": "test",
+            "sha256": "9282b318f39312b66981e7cf46d9542c6c706a7a7fd1126b11598f2979bfe5bc",
+            "size": 19
+          }
+        ],
+        "metadata": {
+          "ingest_id": "4gI9ndesxMbQVRa1OWB5CJ",
+          "ts": "2021-03-04T21:23:00.354786Z",
+          "type": "INGEST"
+        },
+        "notification": {
+          "queue": "test_java_client",
+          "threshold": null
+        },
+        "params": {
+          "classification": "TLP:WHITE",
+          "deep_scan": false,
+          "description": "Inspection of file: al_test.zip",
+          "generate_alert": false,
+          "groups": [
+            "USERS"
+          ],
+          "ignore_cache": false,
+          "ignore_dynamic_recursion_prevention": false,
+          "ignore_filtering": false,
+          "ignore_size": false,
+          "initial_data": null,
+          "max_extracted": 500,
+          "max_supplementary": 500,
+          "never_drop": false,
+          "priority": 1000,
+          "profile": false,
+          "psid": null,
+          "quota_item": true,
+          "service_spec": {},
+          "services": {
+            "excluded": [],
+            "resubmit": [],
+            "runtime_excluded": [],
+            "selected": [
+              "Static Analysis",
+              "Extraction",
+              "Antivirus",
+              "Networking"
+            ]
+          },
+          "submitter": "username",
+          "ttl": 0,
+          "type": "USER"
+        },
+        "sid": "1BUDjiaJ6aly2lRTSt6nhw",
+        "time": "2021-03-04T21:23:00.354853Z"
+      }
+    }
+  ],
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

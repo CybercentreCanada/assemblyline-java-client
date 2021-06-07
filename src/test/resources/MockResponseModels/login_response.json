@@ -1,0 +1,10 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "privileges" : ["R", "W"],
+    "session_duration" : 300,
+    "username" : "test"
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

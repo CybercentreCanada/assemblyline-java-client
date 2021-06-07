@@ -1,0 +1,35 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "classification": "TLP:WHITE",
+    "filtered": false,
+    "partial": false,
+    "tree": {
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36": {
+        "children": {
+          "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7": {
+            "children": {},
+            "name": [
+              "al_test.txt"
+            ],
+            "score": 0,
+            "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+            "size": 6,
+            "truncated": false,
+            "type": "unknown"
+          }
+        },
+        "name": [
+          "al_test.zip"
+        ],
+        "score": 0,
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36",
+        "size": 162,
+        "truncated": false,
+        "type": "archive/zip"
+      }
+    }
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

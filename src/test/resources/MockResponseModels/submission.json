@@ -1,0 +1,82 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "archive_ts": "2021-02-24T18:15:12.257136Z",
+    "classification": "TLP:WHITE",
+    "error_count": 0,
+    "errors": [],
+    "expiry_ts": null,
+    "file_count": 2,
+    "files": [
+      {
+        "name": "al_test.zip",
+        "sha256": "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36",
+        "size": 162
+      }
+    ],
+    "max_score": 0,
+    "metadata": {},
+    "params": {
+      "classification": "TLP:WHITE",
+      "deep_scan": false,
+      "description": "Inspection of file: al_test.zip",
+      "generate_alert": false,
+      "groups": [
+        "USERS"
+      ],
+      "ignore_cache": false,
+      "ignore_dynamic_recursion_prevention": false,
+      "ignore_filtering": false,
+      "ignore_size": false,
+      "initial_data": null,
+      "max_extracted": 500,
+      "max_supplementary": 500,
+      "never_drop": false,
+      "priority": 1000,
+      "profile": false,
+      "psid": null,
+      "quota_item": true,
+      "service_spec": {},
+      "services": {
+        "excluded": [],
+        "resubmit": [],
+        "runtime_excluded": [],
+        "selected": [
+          "Static Analysis",
+          "Extraction",
+          "Antivirus",
+          "Networking"
+        ]
+      },
+      "submitter": "username",
+      "ttl": 0,
+      "type": "USER"
+    },
+    "results": [
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaPeek.v4_0_0_stable4.cDyOMFE1phHM.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.ConfigExtractor.v4_0_1_stable15.cDyOMFE1phHM.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.FrankenStrings.v4_0_0_stable3.cDyOMFE1phHM.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.TagCheck.v4_0_0_stable9.c5Mx9otMNWwr.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Codevector.v4_0_0_stable6.cDyOMFE1phHM.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.VirusTotalCache.v4_0_1_stable7.c1waIr4vQjB5",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.YARA.v4_0_0_stable9.c5Mx9otMNWwr.e",
+      "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaDefender.v4_0_0_stable5.cB4MCKLVFawL.e",
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36.Extract.v4_0_0_stable9.c2i2PqguInqd"
+    ],
+    "sid": "3p9RPMzkoYJ1p4vfdZj6B0",
+    "state": "completed",
+    "times": {
+      "completed": "2021-02-19T18:15:15.129742Z",
+      "submitted": "2021-02-19T18:15:12.257298Z"
+    },
+    "verdict": {
+      "malicious": [],
+      "non_malicious": [
+        "username"
+      ]
+    }
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}

@@ -1,0 +1,180 @@
+{
+  "api_error_message": "",
+  "api_response": {
+    "alternates": {
+      "Characterize": [
+        {
+          "classification": "TLP:WHITE",
+          "created": "2021-02-15T17:37:52.510Z",
+          "drop_file": false,
+          "id": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable4.cDyOMFE1phHM",
+          "response": {
+            "service_name": "Characterize",
+            "service_version": "v4.0.0.stable4"
+          },
+          "result": {
+            "score": 0
+          }
+        }
+      ],
+      "VirusTotalCache": [
+        {
+          "classification": "TLP:WHITE",
+          "created": "2021-02-15T17:37:53.816Z",
+          "drop_file": false,
+          "id": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.VirusTotalCache.v4_0_1_stable6.c7uXpMuO5nLU",
+          "response": {
+            "service_name": "VirusTotalCache",
+            "service_tool_version": "DB Checked: 2021-02-15 14:12:49 UTC",
+            "service_version": "v4.0.1.stable6"
+          },
+          "result": {
+            "score": 0
+          }
+        }
+      ]
+    },
+    "attack_matrix": {},
+    "childrens": [],
+    "errors": [],
+    "file_info": {
+      "archive_ts": "2021-02-24T18:15:12.770369Z",
+      "ascii": "Hello!",
+      "classification": "TLP:WHITE",
+      "entropy": 2.251629167387823,
+      "expiry_ts": null,
+      "hex": "48656c6c6f21",
+      "magic": "ASCII text, with no line terminators",
+      "md5": "952d2c56d0485958336747bcdd98590d",
+      "mime": "text/plain",
+      "seen": {
+        "count": 2,
+        "first": "2021-02-15T17:37:51.953004Z",
+        "last": "2021-02-19T18:15:12.770385Z"
+      },
+      "sha1": "69342c5c39e5ae5f0077aecc32c0f81811fb8193",
+      "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+      "size": 6,
+      "ssdeep": "3:at:at",
+      "type": "unknown"
+    },
+    "file_viewer_only": true,
+    "heuristics": {},
+    "metadata": {
+      "submitter": {
+        "username": 2
+      }
+    },
+    "parents": [
+      "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36.Extract.v4_0_0_stable9.c2i2PqguInqd"
+    ],
+    "results": [
+      {
+        "archive_ts": "2021-02-24T18:15:14.673617Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-19T18:15:14.673584Z",
+        "drop_file": false,
+        "expiry_ts": null,
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-19T18:15:14.672364Z",
+            "service_started": "2021-02-19T18:15:14.459308Z"
+          },
+          "service_context": "DB Checked: 2021-02-19 17:13:55 UTC",
+          "service_debug_info": null,
+          "service_name": "VirusTotalCache",
+          "service_tool_version": "DB Checked: 2021-02-19 15:56:31 UTC",
+          "service_version": "4.0.1.stable7",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": [
+            {
+              "body": {
+                "Community Reputation": 50,
+                "First Seen": "2010-03-11 17:04:01",
+                "Last Seen": "2021-01-18 04:26:30",
+                "Permalink": "https://www.virustotal.com/gui/file/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
+                "Scan Date": "2021-01-18 04:26:30"
+              },
+              "body_format": "KEY_VALUE",
+              "classification": "TLP:WHITE",
+              "depth": 0,
+              "heuristic": null,
+              "tags": [],
+              "title_text": "vt_test_file.txt"
+            }
+          ]
+        },
+        "section_hierarchy": [
+          {
+            "children": [],
+            "id": 0
+          }
+        ],
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      },
+      {
+        "archive_ts": "2021-02-24T18:15:13.377863Z",
+        "classification": "TLP:WHITE",
+        "created": "2021-02-19T18:15:13.377831Z",
+        "drop_file": false,
+        "expiry_ts": null,
+        "response": {
+          "extracted": [],
+          "milestones": {
+            "service_completed": "2021-02-19T18:15:13.377078Z",
+            "service_started": "2021-02-19T18:15:13.149844Z"
+          },
+          "service_context": null,
+          "service_debug_info": null,
+          "service_name": "Characterize",
+          "service_tool_version": null,
+          "service_version": "4.0.0.stable5",
+          "supplementary": []
+        },
+        "result": {
+          "score": 0,
+          "sections": [
+            {
+              "body": {
+                "data": {
+                  "domain": [
+                    0,
+                    8
+                  ],
+                  "values": [
+                    -0.0,-0.0,-0.0,-0.0,-0.0,-0.0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0
+                  ]
+                },
+                "type": "colormap"
+              },
+              "body_format": "GRAPH_DATA",
+              "classification": "TLP:WHITE",
+              "depth": 0,
+              "heuristic": null,
+              "tags": [],
+              "title_text": "File entropy: 2.252"
+            }
+          ]
+        },
+        "section_hierarchy": [
+          {
+            "children": [],
+            "id": 0
+          }
+        ],
+        "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"
+      }
+    ],
+    "signatures": [],
+    "tags": {}
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 200
+}
