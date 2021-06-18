@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=ca.gc.cyber.assemblyline.java.client.AssemblylineClientConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=ca.gc.cyber.ops.assemblyline.java.client.AssemblylineClientConfig
