@@ -1,5 +1,6 @@
 package ca.gc.cyber.ops.assemblyline.java.client.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -28,6 +29,7 @@ public class FileResults {
     /**
      * Map from attack category to list of attacks
      */
+    @JsonIgnore
     Map<String, List<Attack>> attackMatrix;
     /**
      * [sic]
@@ -48,6 +50,7 @@ public class FileResults {
     /**
      * Map from heuristic type (info, suspicious, malicious) to list of heuristics
      */
+    @JsonIgnore
     Map<String, List<Heuristic>> heuristics;
     /**
      * Metadata facets results
@@ -68,6 +71,7 @@ public class FileResults {
     /**
      * Map of tag type to list of tags
      */
+    @JsonIgnore
     Map<String, List<Tag>> tags;
 
     /**
