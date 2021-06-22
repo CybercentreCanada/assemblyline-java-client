@@ -6,7 +6,7 @@
 
     <groupId>ca.gc.cyber.ops</groupId>
     <artifactId>assemblyline-java-client</artifactId>
-    <version>1.4</version>
+    <version>1.5-SNAPSHOT</version>
 
     <properties>
         <java.version>11</java.version>
