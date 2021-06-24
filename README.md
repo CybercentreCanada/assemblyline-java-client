@@ -28,3 +28,12 @@ To instantiate a password authenticated assemblyline client, define the followin
             password: <password>
             username: <username>
  
+### Proxy
+
+To go through a proxy, add the following properties:
+
+    assemblyline-java-client:
+        proxy:
+            host: <host>
+            port: <port>
+ 
