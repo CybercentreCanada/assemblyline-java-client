@@ -15,5 +15,5 @@ public class ProxyProperties {
     /**
      * Proxy port.
      */
-    private String port;
+    private int port;
 }

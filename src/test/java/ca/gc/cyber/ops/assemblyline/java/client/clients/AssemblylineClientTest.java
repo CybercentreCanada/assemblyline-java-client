@@ -98,8 +98,7 @@ class AssemblylineClientTest {
     }
 
     /**
-     * Helper method to verify the behaviour of  methods in AssemblylineClient that make HTTP GET requests. It verifies
-     * the returned value and the HTTP path that were used.
+     * Helper method to verify the behaviour of  methods in AssemblylineClient that make HTTP GET requests. It verifies the returned value and the HTTP path that were used.
      *
      * @param actualResult    Output from a method in AssemblylineClient
      * @param expectedPath    Expected path for HTTP request
@@ -136,8 +135,7 @@ class AssemblylineClientTest {
     }
 
     /**
-     * Helper method to verify the behaviour of methods in AssemblylineClient that make HTTP POST requests with a JSON
-     * body. It verifies the returned value, the HTTP request path, and the HTTP request body that were used.
+     * Helper method to verify the behaviour of methods in AssemblylineClient that make HTTP POST requests with a JSON body. It verifies the returned value, the HTTP request path, and the HTTP request body that were used.
      *
      * @param actualResult        Output from a method in AssemblylineClient
      * @param expectedResult      Expected result
@@ -147,7 +145,7 @@ class AssemblylineClientTest {
      */
     private <T> void verifyHttpPostJson(Mono<T> actualResult, T expectedResult, String expectedPath,
                                         String expectedRequestBody) {
-        verifyHttpPostResponse(actualResult, expectedResult);
+        this.verifyHttpPostResponse(actualResult, expectedResult);
 
         try {
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
@@ -163,7 +161,7 @@ class AssemblylineClientTest {
     private <T, U> void verifyHttpPostJsonMuliformData(Mono<T> actualResult, T expectedResult, String expectedPath,
                                                        TypeReference<U> type, U expectedJsonRequest, byte[] binData) {
 
-        verifyHttpPostResponse(actualResult, expectedResult);
+        this.verifyHttpPostResponse(actualResult, expectedResult);
         try {
 
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
@@ -200,7 +198,8 @@ class AssemblylineClientTest {
 
         Assertions.assertTrue(assemblylineClient.getSession().isEmpty());
 
-        StepVerifier.create(assemblylineClient.login()).expectNext(MockResponseModels.getLoginResponse())
+        StepVerifier.create(this.assemblylineClient.login())
+                .expectNext(MockResponseModels.getLoginResponse())
                 .expectComplete().verify();
 
         Assertions.assertEquals(session, assemblylineClient.getSession());
@@ -213,7 +212,8 @@ class AssemblylineClientTest {
 
         Assertions.assertTrue(assemblylineClient.getSession().isEmpty());
 
-        StepVerifier.create(assemblylineClient.login()).expectError(WebClientResponseException.Unauthorized.class)
+        StepVerifier.create(this.assemblylineClient.login())
+                .expectError(WebClientResponseException.Unauthorized.class)
                 .verify();
 
         Assertions.assertTrue(assemblylineClient.getSession().isEmpty());
@@ -230,7 +230,10 @@ class AssemblylineClientTest {
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getIsSubmissionCompleteResponseJson())
                 .addHeader("Content-Type", "application/json").addHeader("Set-Cookie", "session=" + session));
 
-        StepVerifier.create(assemblylineClient.isSubmissionComplete("test")).expectNext(true).expectComplete().verify();
+        StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
+                .expectNext(true)
+                .expectComplete()
+                .verify();
 
         RecordedRequest actualRequestNoToken = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
         Assertions.assertNull(actualRequestNoToken.getHeader(HttpHeaders.AUTHORIZATION));
@@ -251,7 +254,10 @@ class AssemblylineClientTest {
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getIsSubmissionCompleteResponseJson())
                 .addHeader("Content-Type", "application/json").addHeader("Set-Cookie", "session=" + session));
 
-        StepVerifier.create(assemblylineClient.isSubmissionComplete("test")).expectNext(true).expectComplete().verify();
+        StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
+                .expectNext(true)
+                .expectComplete()
+                .verify();
 
         Assertions.assertEquals(session, assemblylineClient.getSession());
     }
@@ -263,7 +269,8 @@ class AssemblylineClientTest {
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getIsSubmissionCompleteResponseJson())
                 .addHeader("Content-Type", "application/json").addHeader("Set-Cookie", "session=" + session));
 
-        verifyHttpGet(assemblylineClient.isSubmissionComplete("test"), "/api/v4/submission/is_completed/test/",
+        verifyHttpGet(this.assemblylineClient.isSubmissionComplete("test"),
+                "/api/v4/submission/is_completed/test/",
                 MockResponseModels.getIsSubmissionCompleteResponse());
     }
 
@@ -278,7 +285,8 @@ class AssemblylineClientTest {
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getIsSubmissionCompleteResponseJson())
                 .addHeader("Content-Type", "application/json"));
 
-        verifyHttpGet(assemblylineClient.isSubmissionComplete("test"), "/api/v4/submission/is_completed/test/",
+        verifyHttpGet(this.assemblylineClient.isSubmissionComplete("test"),
+                "/api/v4/submission/is_completed/test/",
                 MockResponseModels.getIsSubmissionCompleteResponse());
     }
 
@@ -291,8 +299,9 @@ class AssemblylineClientTest {
                 .addHeader("Content-Type", "application/json"));
         mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
 
-        StepVerifier.create(assemblylineClient.isSubmissionComplete("test")).expectErrorMatches(
-                e -> Exceptions.isRetryExhausted(e) && e.getCause() instanceof WebClientResponseException.Unauthorized)
+        StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
+                .expectErrorMatches(e -> Exceptions.isRetryExhausted(e) &&
+                        e.getCause() instanceof WebClientResponseException.Unauthorized)
                 .verify();
     }
 
@@ -300,15 +309,16 @@ class AssemblylineClientTest {
     void testIsSubmissionCompleteServerError() {
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getInternalErrorJson()).setResponseCode(500)
                 .addHeader("Content-Type", "application/json"));
-        StepVerifier.create(assemblylineClient.isSubmissionComplete("test")).expectErrorMatches(
-                e -> e instanceof WebClientResponseException.InternalServerError && e.getMessage()
-                        .contains("Message from Assemblyline")).verify();
+        StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
+            .expectErrorMatches(e -> e instanceof WebClientResponseException.InternalServerError &&
+                    e.getMessage().contains("Message from Assemblyline"))
+            .verify();
     }
 
     @Test
     void testIsSubmissionJsonError() {
         mockBackEnd.enqueue(new MockResponse().setBody("testErrorNotJson").setResponseCode(500));
-        StepVerifier.create(assemblylineClient.isSubmissionComplete("test"))
+        StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
                 .expectErrorMatches(e -> e instanceof JsonParseException).verify();
     }
 
@@ -316,8 +326,7 @@ class AssemblylineClientTest {
     void testGetFileInfo() {
         mockResponse(MockResponseModels.getFileInfoJson());
 
-        verifyHttpGet(
-                assemblylineClient.getFileInfo("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
+        verifyHttpGet(this.assemblylineClient.getFileInfo("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
                 "/api/v4/file/info/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/",
                 MockResponseModels.getFileInfo());
     }
@@ -326,8 +335,7 @@ class AssemblylineClientTest {
     void testGetFileResults() {
         mockResponse(MockResponseModels.getFileResultsJson());
 
-        verifyHttpGet(
-                assemblylineClient.getFileResults("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
+        verifyHttpGet(this.assemblylineClient.getFileResults("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
                 "/api/v4/file/result/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/",
                 MockResponseModels.getFileResults());
     }
@@ -336,9 +344,7 @@ class AssemblylineClientTest {
     void testGetFileResultsForService() {
         mockResponse(MockResponseModels.getFileResultForServiceJson());
 
-        verifyHttpGet(assemblylineClient
-                        .getFileResultForService("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
-                                "Characterize"),
+        verifyHttpGet(this.assemblylineClient.getFileResultForService("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7", "Characterize"),
                 "/api/v4/file/result/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/Characterize/",
                 MockResponseModels.getFileResultForService());
     }
@@ -347,8 +353,7 @@ class AssemblylineClientTest {
     void testGetResult() {
         mockResponse(MockResponseModels.getResultBlockJson());
 
-        verifyHttpGet(assemblylineClient.getResult(
-                "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM"),
+        verifyHttpGet(this.assemblylineClient.getResult("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM"),
                 "/api/v4/result/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM/",
                 MockResponseModels.getResultBlock());
     }
@@ -357,8 +362,7 @@ class AssemblylineClientTest {
     void testGetSubmissionFileResults() {
         mockResponse(MockResponseModels.getSubmissionFileResultsJson());
 
-        verifyHttpGet(assemblylineClient.getSubmissionFileResults("3p9RPMzkoYJ1p4vfdZj6B0",
-                "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
+        verifyHttpGet(this.assemblylineClient.getSubmissionFileResults("3p9RPMzkoYJ1p4vfdZj6B0", "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
                 "/api/v4/submission/3p9RPMzkoYJ1p4vfdZj6B0/file/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/",
                 MockResponseModels.getSubmissionFileResults());
     }
@@ -367,7 +371,7 @@ class AssemblylineClientTest {
     void testIngestSha256File() {
         mockResponse(MockResponseModels.getIngestResponseJson());
 
-        verifyHttpPostJson(assemblylineClient.ingestUrlOrSha256(RequestModels.getSha256IngestObject()),
+        verifyHttpPostJson(this.assemblylineClient.ingestUrlOrSha256(RequestModels.getSha256IngestObject()),
                 MockResponseModels.getIngestResponse(), "/api/v4/ingest/", RequestModels.getSha256IngestJson());
     }
 
@@ -376,7 +380,7 @@ class AssemblylineClientTest {
 
         mockResponse(MockResponseModels.getIngestResponseJson());
 
-        verifyHttpPostJson(assemblylineClient.ingestUrlOrSha256(RequestModels.getUrlIngestObject()),
+        verifyHttpPostJson(this.assemblylineClient.ingestUrlOrSha256(RequestModels.getUrlIngestObject()),
                 MockResponseModels.getIngestResponse(), "/api/v4/ingest/", RequestModels.getUrlIngestJson());
     }
 
@@ -385,7 +389,7 @@ class AssemblylineClientTest {
 
         mockResponse(MockResponseModels.getIngestResponseJson());
 
-        verifyHttpPostJsonMuliformData(assemblylineClient.ingestBinary(RequestModels.getBinaryIngestObject()),
+        this.verifyHttpPostJsonMuliformData(this.assemblylineClient.ingestBinary(RequestModels.getBinaryIngestObject()),
                 MockResponseModels.getIngestResponse(), "/api/v4/ingest/", new TypeReference<>() {
                 }, RequestModels.getBinaryIngestBaseObject(), RequestModels.getBinaryData());
     }
@@ -394,7 +398,7 @@ class AssemblylineClientTest {
     void testGetSubmissionTree() {
         mockResponse(MockResponseModels.getSubmissionTreeJson());
 
-        verifyHttpGet(assemblylineClient.getSubmissionTree("3p9RPMzkoYJ1p4vfdZj6B0"),
+        verifyHttpGet(this.assemblylineClient.getSubmissionTree("3p9RPMzkoYJ1p4vfdZj6B0"),
                 "/api/v4/submission/tree/3p9RPMzkoYJ1p4vfdZj6B0/", MockResponseModels.getSubmissionTree());
     }
 
@@ -402,7 +406,7 @@ class AssemblylineClientTest {
     void testGetSubmission() {
         mockResponse(MockResponseModels.getSubmissionJson());
 
-        verifyHttpGet(assemblylineClient.getSubmission("3p9RPMzkoYJ1p4vfdZj6B0"),
+        verifyHttpGet(this.assemblylineClient.getSubmission("3p9RPMzkoYJ1p4vfdZj6B0"),
                 "/api/v4/submission/3p9RPMzkoYJ1p4vfdZj6B0/", MockResponseModels.getSubmission());
     }
 
@@ -410,7 +414,7 @@ class AssemblylineClientTest {
     void testGetSubmissionFull() {
         mockResponse(MockResponseModels.getSubmissionFullJson());
 
-        verifyHttpGet(assemblylineClient.getSubmissionFull("3p9RPMzkoYJ1p4vfdZj6B0"),
+        verifyHttpGet(this.assemblylineClient.getSubmissionFull("3p9RPMzkoYJ1p4vfdZj6B0"),
                 "/api/v4/submission/full/3p9RPMzkoYJ1p4vfdZj6B0/", MockResponseModels.getSubmissionFull());
     }
 
@@ -418,7 +422,7 @@ class AssemblylineClientTest {
     void testSubmit() {
         mockResponse(MockResponseModels.getSubmissionJson());
 
-        verifyHttpPostJsonMuliformData(assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()),
+        this.verifyHttpPostJsonMuliformData(this.assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()),
                 MockResponseModels.getSubmission(), "/api/v4/submit/", new TypeReference<>() {
                 }, RequestModels.getBinarySubmitMetadata(), RequestModels.getBinaryData());
     }
@@ -427,7 +431,7 @@ class AssemblylineClientTest {
     void testSubmitUrl() {
         mockResponse(MockResponseModels.getSubmissionJson());
 
-        verifyHttpPostJson(assemblylineClient.submitUrlOrSha256(RequestModels.getUrlSubmitObject()),
+        verifyHttpPostJson(this.assemblylineClient.submitUrlOrSha256(RequestModels.getUrlSubmitObject()),
                 MockResponseModels.getSubmission(), "/api/v4/submit/", RequestModels.getUrlSubmitJson());
     }
 
@@ -435,7 +439,7 @@ class AssemblylineClientTest {
     void testSubmitSha256() {
         mockResponse(MockResponseModels.getSubmissionJson());
 
-        verifyHttpPostJson(assemblylineClient.submitUrlOrSha256(RequestModels.getSha256SubmitObject()),
+        verifyHttpPostJson(this.assemblylineClient.submitUrlOrSha256(RequestModels.getSha256SubmitObject()),
                 MockResponseModels.getSubmission(), "/api/v4/submit/", RequestModels.getSha256SubmitJson());
     }
 
@@ -446,8 +450,7 @@ class AssemblylineClientTest {
                 .addHeader("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .addHeader("Set-Cookie", "session=" + session));
 
-        try (InputStream fileStream = assemblylineClient
-                .downloadFile("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7");
+        try (InputStream fileStream = this.assemblylineClient.downloadFile("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7");
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             fileStream.transferTo(outputStream);
 
@@ -478,7 +481,7 @@ class AssemblylineClientTest {
         DownloadFileParams params =
                 DownloadFileParams.builder().encoding(DownloadFileParams.Encoding.RAW).name(name).sid(sid).build();
 
-        try (InputStream fileStream = assemblylineClient.downloadFile(sha256, params);
+        try (InputStream fileStream = this.assemblylineClient.downloadFile(sha256, params);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             fileStream.transferTo(outputStream);
 
@@ -503,7 +506,8 @@ class AssemblylineClientTest {
     void testGetHashSearchDataSources() {
         mockResponse(MockResponseModels.getHashSearchDataSourcesJson());
 
-        verifyHttpGet(assemblylineClient.getHashSearchDataSources(), "/api/v4/hash_search/list_data_sources/",
+        verifyHttpGet(this.assemblylineClient.getHashSearchDataSources(),
+                "/api/v4/hash_search/list_data_sources/",
                 MockResponseModels.getHashSearchDataSources());
     }
 
@@ -511,7 +515,7 @@ class AssemblylineClientTest {
     void testHashSearchNoOptionalParams() {
         mockResponse(MockResponseModels.getHashSearchJson());
 
-        verifyHttpGet(assemblylineClient.hashSearch("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
+        verifyHttpGet(this.assemblylineClient.hashSearch("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
                 "/api/v4/hash_search/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/",
                 MockResponseModels.getHashSearch());
     }
@@ -523,9 +527,7 @@ class AssemblylineClientTest {
         /* As with some other tests, we don't need the mock/expected response to match the parameters that are
         submitted; using those parameters is the job of *real* Assemblyline. We just need to make sure that the
         parameters get sent properly and that our client handles the response. */
-        verifyHttpGet(assemblylineClient
-                        .hashSearch("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7", List.of("a", "b", "c"),
-                                15),
+        verifyHttpGet(this.assemblylineClient.hashSearch("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7", List.of("a", "b", "c"), 15),
                 // %7C is a URL-encoded "|" (pipe)
                 "/api/v4/hash_search/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/?db=a%7Cb%7Cc&max_timeout=15",
                 MockResponseModels.getHashSearch());
@@ -535,20 +537,8 @@ class AssemblylineClientTest {
     void testIngestGetMessageList() {
         mockResponse(MockResponseModels.getIngestMessageListJson());
 
-        verifyHttpGet(assemblylineClient.getIngestMessageList("test_java_client"),
+        verifyHttpGet(this.assemblylineClient.getIngestMessageList("test_java_client"),
                 "/api/v4/ingest/get_message_list/test_java_client/", MockResponseModels.getIngestMessageList());
-    }
-
-    @Test
-    void testConstructor_proxyHostSet_proxyPortNotSet() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort(null);
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                        new AssemblylineAuthenticationTestImpl()));
-        assertEquals("Proxy host provided without a port. Make sure the proxy port is also set.", e.getMessage());
     }
 
     @Test
@@ -556,11 +546,11 @@ class AssemblylineClientTest {
 
         ProxyProperties invalidProxyProps = new ProxyProperties();
         invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort("1a");
+        invalidProxyProps.setPort(0);
         Exception e = assertThrows(IllegalArgumentException.class,
                 () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
                         new AssemblylineAuthenticationTestImpl()));
-        assertEquals("Invalid port number: 1a", e.getMessage());
+        assertEquals("Proxy host provided without a valid port.", e.getMessage());
     }
 
     @Test
@@ -568,7 +558,7 @@ class AssemblylineClientTest {
 
         ProxyProperties invalidProxyProps = new ProxyProperties();
         invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort("1234");
+        invalidProxyProps.setPort(1234);
         new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
                 new AssemblylineAuthenticationTestImpl());
 
@@ -581,8 +571,8 @@ class AssemblylineClientTest {
         private String field2;
 
         MetadataObjectTest() {
-            field1 = "test1";
-            field2 = "test2";
+            this.field1 = "test1";
+            this.field2 = "test2";
         }
     }
 }
