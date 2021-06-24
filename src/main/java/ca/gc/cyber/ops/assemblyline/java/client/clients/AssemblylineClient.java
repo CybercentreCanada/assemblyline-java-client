@@ -1,11 +1,22 @@
 package ca.gc.cyber.ops.assemblyline.java.client.clients;
 
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.AssemblylineAuthenticationMethod;
-import ca.gc.cyber.ops.assemblyline.java.client.model.*;
+import ca.gc.cyber.ops.assemblyline.java.client.model.DownloadFileParams;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileInfo;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileResultForService;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileResults;
+import ca.gc.cyber.ops.assemblyline.java.client.model.HashSearchResult;
+import ca.gc.cyber.ops.assemblyline.java.client.model.IngestResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.LoginResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.ResultBlock;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.NonBinaryIngest;
-import ca.gc.cyber.ops.assemblyline.java.client.model.submission.*;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.IngestSubmissionResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.Submission;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionFileResults;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionFull;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionTree;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.NonBinarySubmit;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.SubmitMetadata;
 import ca.gc.cyber.ops.assemblyline.java.client.responses.AssemblylineApiResponse;
@@ -26,17 +37,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.client.reactive.ClientHttpRequest;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.*;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.ProxyProvider;
 import reactor.util.retry.Retry;
 
 import java.io.IOException;
@@ -90,31 +108,31 @@ public class AssemblylineClient {
     protected AssemblylineAuthenticationMethod assemblylineAuthenticationMethod;
 
     protected ExchangeFilterFunction addSession = (request, next) -> {
-        ClientRequest updatedRequest = ClientRequest.from(request)
-                .cookie(SESSION_COOKIE, session)
-                .build();
+        ClientRequest updatedRequest = ClientRequest.from(request).cookie(SESSION_COOKIE, session).build();
         return next.exchange(updatedRequest);
     };
 
     private String authBearerToken;
 
     public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
-                              ObjectMapper defaultMapper, AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
-        this.mapper = defaultMapper.copy();
+                              ProxyProperties proxyProperties, ObjectMapper defaultMapper,
+                              AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
+        mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        this.buildWebClient(assemblylineClientProperties);
+        buildWebClient(assemblylineClientProperties, proxyProperties);
     }
 
     /**
-     * Makes a copy of an AssemblylineClient that uses the same underlying {@link WebClient}. This is intended for use with methods like {@link #withAuthBearerToken} that set session-specific state.
+     * Makes a copy of an AssemblylineClient that uses the same underlying {@link WebClient}. This is intended for use
+     * with methods like {@link #withAuthBearerToken} that set session-specific state.
      */
     private AssemblylineClient(AssemblylineClient original) {
-        this.mapper = original.mapper;
-        this.assemblylineAuthenticationMethod = original.assemblylineAuthenticationMethod;
-        this.webClient = original.webClient;
-        this.session = original.session;
+        mapper = original.mapper;
+        assemblylineAuthenticationMethod = original.assemblylineAuthenticationMethod;
+        webClient = original.webClient;
+        session = original.session;
     }
 
     /**
@@ -129,26 +147,58 @@ public class AssemblylineClient {
         return newClient;
     }
 
-    protected void buildWebClient(AssemblylineClientProperties assemblylineClientProperties) {
+    protected void buildWebClient(AssemblylineClientProperties assemblylineClientProperties,
+                                  ProxyProperties proxyProperties) {
 
-        webClient = WebClient.builder()
+        HttpClient httpClient = createHttpClient(proxyProperties);
+
+        webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(clientCodecConfigurer -> {
-                    clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(this.mapper));
-                    clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(this.mapper));
-                })
-                .filter(addSession)
-                .baseUrl(assemblylineClientProperties.getUrl())
-                .build();
+                    clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(mapper));
+                    clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(mapper));
+                }).filter(addSession).baseUrl(assemblylineClientProperties.getUrl()).build();
+    }
+
+    /**
+     * Return an HttpClient that uses the proxy setup via the properties, if properties host and port are both set. If
+     * no proxy properties are set, a 'secure' Httpclient is returned without proxy configured.
+     *
+     * @return HttpClient
+     * @throws IllegalArgumentException If proxy port is not valid
+     */
+    private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
+        String proxyHost = proxyProperties.getHost();
+        String proxyPort = proxyProperties.getPort();
+
+        if (proxyHost == null) {
+            log.debug("No proxy host set. Assembly line client not configured to go through a proxy.");
+            return HttpClient.create().secure();
+        }
+
+        if (proxyPort == null) {
+            throw new IllegalArgumentException(
+                    "Proxy host provided without a port. Make sure the proxy port is also set.");
+        }
+
+        int port;
+        try {
+            port = Integer.parseInt(proxyPort);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid port number: " + proxyPort);
+        }
+
+        log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, port);
+        return HttpClient.create().secure()
+                .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(port));
     }
 
     public Mono<LoginResponse> login() {
 
         return webClient.post().uri(LOGIN_URL)
-                .body(BodyInserters.fromFormData(this.assemblylineAuthenticationMethod.getAuthBody()))
-                .exchangeToMono(cr ->
-                        clientResponseToMono(cr, new ParameterizedTypeReference<AssemblylineApiResponse<LoginResponse>>() {
-                        })
-                                .doOnSuccess(lr -> this.setSession(cr)));
+                .body(BodyInserters.fromFormData(assemblylineAuthenticationMethod.getAuthBody())).exchangeToMono(
+                        cr -> clientResponseToMono(cr,
+                                new ParameterizedTypeReference<AssemblylineApiResponse<LoginResponse>>() {
+                                }).doOnSuccess(lr -> setSession(cr)));
     }
 
     public Mono<Boolean> isSubmissionComplete(String sid) {
@@ -199,71 +249,55 @@ public class AssemblylineClient {
     public Mono<IngestResponse> ingestUrlOrSha256(NonBinaryIngest ingest) {
 
         return post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
-                },
-                BodyInserters.fromValue(ingest), MediaType.APPLICATION_JSON);
-
+        }, BodyInserters.fromValue(ingest), MediaType.APPLICATION_JSON);
     }
 
     public Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest) {
 
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
+        return Mono.fromCallable(() -> multipartInserterFromBinaryIngest(binaryIngest))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
-                        },
-                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
-
+                }, multipartInserter, MediaType.MULTIPART_FORM_DATA));
     }
 
     public Flux<IngestSubmissionResponse> getIngestMessageList(String notification) {
 
         return get(buildUri(INGEST_GET_MESSAGE_LIST_URL, notification),
                 new ParameterizedTypeReference<AssemblylineApiResponse<List<IngestSubmissionResponse>>>() {
-                })
-                .flatMapMany(Flux::fromIterable);
-
+                }).flatMapMany(Flux::fromIterable);
     }
 
     public Mono<Submission> submitUrlOrSha256(NonBinarySubmit submit) {
 
         return post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
-                },
-                BodyInserters.fromValue(submit), MediaType.APPLICATION_JSON);
-
+        }, BodyInserters.fromValue(submit), MediaType.APPLICATION_JSON);
     }
 
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
 
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
+        return Mono.fromCallable(() -> multipartInserterFromBinaryIngest(binaryIngest))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
-                        },
-                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+                }, multipartInserter, MediaType.MULTIPART_FORM_DATA));
     }
 
     private Flux<DataBuffer> downloadFileAsFlux(String sha256, DownloadFileParams params) {
-        return webClient.get()
-                .uri(uriBuilder -> {
-                    uriBuilder.path(FILE_DOWNLOAD_URL)
-                            .queryParam("encoding", params.getEncoding().name().toLowerCase());
+        return webClient.get().uri(uriBuilder -> {
+            uriBuilder.path(FILE_DOWNLOAD_URL).queryParam("encoding", params.getEncoding().name().toLowerCase());
 
-                    if (!Strings.isBlank(params.getName())) {
-                        uriBuilder.queryParam("name", params.getName());
-                    }
+            if (!Strings.isBlank(params.getName())) {
+                uriBuilder.queryParam("name", params.getName());
+            }
 
-                    if (!Strings.isBlank(params.getSid())) {
-                        uriBuilder.queryParam("sid", params.getSid());
-                    }
+            if (!Strings.isBlank(params.getSid())) {
+                uriBuilder.queryParam("sid", params.getSid());
+            }
 
-                    return uriBuilder.build(sha256);
-                })
-                .headers(this::addAuthBearerHeader)
-                .exchangeToFlux(cr ->
-                        this.checkForException(cr)
-                                .flatMapMany(c -> c.body(BodyExtractors.toDataBuffers())))
-                .retryWhen(Retry.max(1)
-                        .filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
-                        .doBeforeRetryAsync(retrySignal ->
-                                this.login().then()));
+            return uriBuilder.build(sha256);
+        }).headers(this::addAuthBearerHeader).exchangeToFlux(
+                cr -> checkForException(cr).flatMapMany(c -> c.body(BodyExtractors.toDataBuffers()))).retryWhen(
+                Retry.max(1).filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
+                        .doBeforeRetryAsync(retrySignal -> login().then()));
     }
 
     public InputStream downloadFile(String sha256) {
@@ -294,9 +328,8 @@ public class AssemblylineClient {
             }
         };
 
-        Flux<DataBuffer> bufferFlux = downloadFileAsFlux(sha256, params)
-                .doOnError(handleError)
-                .doFinally(signalType -> {
+        Flux<DataBuffer> bufferFlux =
+                downloadFileAsFlux(sha256, params).doOnError(handleError).doFinally(signalType -> {
                     //Once all the DataBuffers have been read, close the PipedOutputStream to send EOF to the PipedInputStream.
                     try {
                         writablePipeEnd.close();
@@ -305,13 +338,11 @@ public class AssemblylineClient {
                     }
                 });
 
-        DataBufferUtils.write(bufferFlux, writablePipeEnd)
-                .doOnError(handleError)
+        DataBufferUtils.write(bufferFlux, writablePipeEnd).doOnError(handleError)
                 /* We need this subscribe() for two reasons:
                  *   1. The write() won't actually start until it is subscribed to.
                  *   2. write() does not release the DataBuffers, so we need to do that ourselves.
-                 */
-                .subscribe(DataBufferUtils.releaseConsumer());
+                 */.subscribe(DataBufferUtils.releaseConsumer());
 
         return readablePipeEnd;
     }
@@ -357,49 +388,38 @@ public class AssemblylineClient {
 
     protected void setSession(ClientResponse clientResponse) {
         Optional.ofNullable(clientResponse.cookies().get(SESSION_COOKIE))
-                .flatMap(sessionCookie -> sessionCookie.stream().findFirst()
-                        .map(HttpCookie::getValue))
+                .flatMap(sessionCookie -> sessionCookie.stream().findFirst().map(HttpCookie::getValue))
                 .ifPresent(s -> session = s);
     }
 
     protected <T> Mono<T> retryWrapper(Mono<T> monoContent) {
-        return monoContent
-                .retryWhen(Retry.max(1)
-                        .filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
-                        .doBeforeRetryAsync(retrySignal ->
-                                this.login().then()));
+        return monoContent.retryWhen(
+                Retry.max(1).filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
+                        .doBeforeRetryAsync(retrySignal -> login().then()));
     }
 
     private Mono<ClientResponse> checkForException(ClientResponse rc) {
         if (rc.statusCode().is4xxClientError()) {
             return rc.createException().flatMap(Mono::error);
         }
-        if (rc.statusCode().is5xxServerError()){
-            return rc.createException()
-                    .flatMap(e ->
-                        Mono.fromCallable(() -> this.extractApiErrorMessage(e))
-                                .subscribeOn(Schedulers.boundedElastic())
-                                .map(errorMsg ->
-                                        WebClientResponseException.create(
-                                        e.getStatusCode().value(),
-                                        e.getStatusText() + " : " +  errorMsg,
-                                        e.getHeaders(),
-                                        e.getResponseBodyAsByteArray(),
-                                        //No getter for contentType
-                                        rc.headers().contentType()
-                                                .map(MimeType::getCharset)
-                                                .orElse(StandardCharsets.ISO_8859_1),
-                                        e.getRequest()))
-                    .flatMap(Mono::error)
-                    );
+        if (rc.statusCode().is5xxServerError()) {
+            return rc.createException().flatMap(e -> Mono.fromCallable(() -> extractApiErrorMessage(e))
+                    .subscribeOn(Schedulers.boundedElastic()).map(errorMsg -> WebClientResponseException
+                            .create(e.getStatusCode().value(), e.getStatusText() + " : " + errorMsg, e.getHeaders(),
+                                    e.getResponseBodyAsByteArray(),
+                                    //No getter for contentType
+                                    rc.headers().contentType().map(MimeType::getCharset)
+                                            .orElse(StandardCharsets.ISO_8859_1), e.getRequest()))
+                    .flatMap(Mono::error));
         }
-        this.setSession(rc);
+        setSession(rc);
         return Mono.just(rc);
     }
 
     private String extractApiErrorMessage(WebClientResponseException exception) throws JsonProcessingException {
-        AssemblylineApiResponse<String> response = mapper.readValue(exception.getResponseBodyAsString(),
-                new TypeReference<>() {});
+        AssemblylineApiResponse<String> response =
+                mapper.readValue(exception.getResponseBodyAsString(), new TypeReference<>() {
+                });
         return response.getApiErrorMessage();
     }
 
@@ -411,18 +431,16 @@ public class AssemblylineClient {
      * @param uriBuilder   UriBuilder that will generate the URI to GET.
      * @param responseType A parameterized type reference representing the type of data that will be in the response.
      *                     The declaration of this object must only include concrete type parameters. For example,
-     *                     {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but
-     *                     {@code new ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type
-     *                     parameter on a method) is not OK.
+     *                     {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but {@code new
+     *                     ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type parameter on a
+     *                     method) is not OK.
      * @return The content of the "api_response" section of the response.
      */
     protected <T> Mono<T> get(Function<UriBuilder, URI> uriBuilder,
                               ParameterizedTypeReference<AssemblylineApiResponse<T>> responseType) {
-        return this.retryWrapper(webClient.get()
-                .uri(uriBuilder)
-                .headers(this::addAuthBearerHeader)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchangeToMono(cr -> this.clientResponseToMono(cr, responseType)));
+        return retryWrapper(
+                webClient.get().uri(uriBuilder).headers(this::addAuthBearerHeader).accept(MediaType.APPLICATION_JSON)
+                        .exchangeToMono(cr -> clientResponseToMono(cr, responseType)));
     }
 
     /**
@@ -433,30 +451,27 @@ public class AssemblylineClient {
      * @param uriBuilder   UriBuilder that will generate the URI to POST.
      * @param responseType A parameterized type reference representing the type of data that will be in the response.
      *                     The declaration of this object must only include concrete type parameters. For example,
-     *                     {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but
-     *                     {@code new ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type
-     *                     parameter on a method) is not OK.
+     *                     {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but {@code new
+     *                     ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type parameter on a
+     *                     method) is not OK.
      * @param bodyInserter BodyInserter to construct the body of the Post Request
      * @param contentType  MediaType of the request body
      * @return The content of the "api_response" section of the response.
      */
     protected <T> Mono<T> post(Function<UriBuilder, URI> uriBuilder,
                                ParameterizedTypeReference<AssemblylineApiResponse<T>> responseType,
-                               BodyInserter<?, ? super ClientHttpRequest> bodyInserter,
-                               MediaType contentType) {
-        return this.retryWrapper(webClient.post()
-                .uri(uriBuilder)
-                .contentType(contentType)
-                .headers(this::addAuthBearerHeader)
-                .body(bodyInserter)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchangeToMono(cr -> this.clientResponseToMono(cr, responseType)));
+                               BodyInserter<?, ? super ClientHttpRequest> bodyInserter, MediaType contentType) {
+        return retryWrapper(
+                webClient.post().uri(uriBuilder).contentType(contentType).headers(this::addAuthBearerHeader)
+                        .body(bodyInserter).accept(MediaType.APPLICATION_JSON)
+                        .exchangeToMono(cr -> clientResponseToMono(cr, responseType)));
     }
 
     /**
      * Helper to build URIs.
      * <p>
-     * Given the return type, the name of this method may be a little surprising, but it should help with readability at call sites.
+     * Given the return type, the name of this method may be a little surprising, but it should help with readability at
+     * call sites.
      *
      * @param pathTemplate Template for the path in the URI.
      * @param args         Values to substitute into the template
@@ -469,18 +484,21 @@ public class AssemblylineClient {
     /**
      * Helper to build URIs.
      * <p>
-     * Given the return type, the name of this method may be a little surprising, but it should help with readability at call sites.
+     * Given the return type, the name of this method may be a little surprising, but it should help with readability at
+     * call sites.
      *
      * @param pathTemplate Template for the path in the URI
      * @param params       Query parameters to add to the URL
      * @param templateArgs Values to substitute into the template
      * @return A UriBuilder
      */
-    private Function<UriBuilder, URI> buildUriWithParams(String pathTemplate, Map<String, String> params, Object... templateArgs) {
+    private Function<UriBuilder, URI> buildUriWithParams(String pathTemplate, Map<String, String> params,
+                                                         Object... templateArgs) {
         /* If the path doesn't end with a "/", Assemblyline returns a redirect. If we try to follow the redirect,
         authentication (and by extension the entire request) fails. */
         if (!pathTemplate.endsWith("/")) {
-            throw new IllegalArgumentException("Request URI path template does not end with a slash. URI = " + pathTemplate);
+            throw new IllegalArgumentException(
+                    "Request URI path template does not end with a slash. URI = " + pathTemplate);
         }
         return uriBuilder -> {
             uriBuilder.path(pathTemplate);
@@ -497,7 +515,8 @@ public class AssemblylineClient {
         };
     }
 
-    private BodyInserters.MultipartInserter multipartInserterFromBinaryIngest(BinaryFile<?> binaryFile) throws JsonProcessingException {
+    private BodyInserters.MultipartInserter multipartInserterFromBinaryIngest(BinaryFile<?> binaryFile)
+            throws JsonProcessingException {
         ByteArrayResource bar = new ByteArrayResource(binaryFile.getFile());
         MultipartBodyBuilder mbb = new MultipartBodyBuilder();
         mbb.part(MULTIPART_MSG_BINARY_PART, bar).filename(binaryFile.getFilename());
@@ -509,7 +528,6 @@ public class AssemblylineClient {
         if (authBearerToken != null) {
             httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + authBearerToken);
         }
-
     }
 
     /**
@@ -519,17 +537,15 @@ public class AssemblylineClient {
      * @param clientResponse ClientResponse returned by call
      * @param type           A parameterized type reference representing the type of data that will be in the response.
      *                       The declaration of this object must only include concrete type parameters. For example,
-     *                       {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but
-     *                       {@code new ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type
-     *                       parameter on a method) is not OK.
+     *                       {@code new ParameterizedTypeReference<ALApiResponse<Boolean>>} is OK, but {@code new
+     *                       ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type parameter on a
+     *                       method) is not OK.
      * @param <T>            The type of data that will be in the response.
      * @return Mono<T>
      */
     protected <T> Mono<T> clientResponseToMono(ClientResponse clientResponse,
                                                ParameterizedTypeReference<AssemblylineApiResponse<T>> type) {
-        return this.checkForException(clientResponse)
-                .flatMap(c -> c.bodyToMono(type)
-                        .map(AssemblylineApiResponse::getApiResponse));
+        return checkForException(clientResponse)
+                .flatMap(c -> c.bodyToMono(type).map(AssemblylineApiResponse::getApiResponse));
     }
-
 }
