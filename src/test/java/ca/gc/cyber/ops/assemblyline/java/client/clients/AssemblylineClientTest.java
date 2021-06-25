@@ -74,7 +74,8 @@ class AssemblylineClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
 
-        assemblylineClientProperties.setUrl(String.format("http://localhost:%s", mockBackEnd.getPort()));
+        this.assemblylineClientProperties.setUrl(String.format("http://localhost:%s",
+                mockBackEnd.getPort()));
         assemblylineClient = new AssemblylineClient(assemblylineClientProperties, proxyProperties, defaultMapper,
                 new AssemblylineAuthenticationTestImpl());
         objectMapper = defaultMapper.copy();
@@ -542,7 +543,18 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testConstructor_validProxyHostAndPort() {
+    void testConstructorNullProxyPort() {
+
+        ProxyProperties invalidProxyProps = new ProxyProperties();
+        invalidProxyProps.setHost("abc");
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
+                        new AssemblylineAuthenticationTestImpl()));
+        assertEquals("Proxy port must be set if proxy host is set.", e.getMessage());
+    }
+
+    @Test
+    void testConstructorWithValidProxyHostAndPort() {
 
         ProxyProperties invalidProxyProps = new ProxyProperties();
         invalidProxyProps.setHost("abc");

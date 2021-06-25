@@ -40,6 +40,7 @@ import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserter;
@@ -69,6 +70,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static org.springframework.util.Assert.*;
 
 @Slf4j
 public class AssemblylineClient {
@@ -117,11 +120,11 @@ public class AssemblylineClient {
     public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
                               ProxyProperties proxyProperties, ObjectMapper defaultMapper,
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
-        mapper = defaultMapper.copy();
+        this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        buildWebClient(assemblylineClientProperties, proxyProperties);
+        this.buildWebClient(assemblylineClientProperties, proxyProperties);
     }
 
     /**
@@ -167,12 +170,15 @@ public class AssemblylineClient {
      */
     private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
         String proxyHost = proxyProperties.getHost();
-        int proxyPort = proxyProperties.getPort();
+        Integer proxyPort = proxyProperties.getPort();
 
         if (proxyHost == null) {
             log.debug("No proxy host set. Assembly line client not configured to go through a proxy.");
             return HttpClient.create().secure();
         }
+
+        isTrue(!Strings.isEmpty(proxyHost), "Proxy host, when set, must not be empty.");
+        notNull(proxyPort, "Proxy port must be set if proxy host is set.");
 
         log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, proxyPort);
         return HttpClient.create().secure()
