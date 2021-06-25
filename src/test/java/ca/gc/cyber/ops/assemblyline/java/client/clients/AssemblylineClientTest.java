@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +41,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @ExtendWith({SpringExtension.class})
@@ -131,7 +135,7 @@ class AssemblylineClientTest {
 
         try {
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
-            Assertions.assertEquals(expectedPath, actualRequest.getPath());
+            assertEquals(expectedPath, actualRequest.getPath());
         } catch (InterruptedException ie) {
             Assertions.fail(ie);
         }
@@ -159,7 +163,7 @@ class AssemblylineClientTest {
 
         try {
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
-            Assertions.assertEquals(expectedPath, actualRequest.getPath());
+            assertEquals(expectedPath, actualRequest.getPath());
             /* JSONAsert will check the structure of the JSON, which is nicer than comparing strings with irrelevant
             whitespace or ordering differences. */
             JSONAssert.assertEquals(expectedRequestBody, actualRequest.getBody().readUtf8(), false);
@@ -176,7 +180,7 @@ class AssemblylineClientTest {
         try {
 
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
-            Assertions.assertEquals(expectedPath, actualRequest.getPath());
+            assertEquals(expectedPath, actualRequest.getPath());
 
             MockHttpServletRequest requestContext = new MockHttpServletRequest("POST", actualRequest.getRequestUrl().uri().toString());
             requestContext.setCharacterEncoding(actualRequest.getHeader("Content-Type"));
@@ -188,14 +192,14 @@ class AssemblylineClientTest {
             FileItem binary = items.get(0);
             FileItem json = items.get(1);
 
-            Assertions.assertEquals("bin", binary.getFieldName());
-            Assertions.assertEquals("application/octet-stream", binary.getContentType());
+            assertEquals("bin", binary.getFieldName());
+            assertEquals("application/octet-stream", binary.getContentType());
             Assertions.assertArrayEquals(binData, binary.get());
 
-            Assertions.assertEquals("json", json.getFieldName());
-            Assertions.assertEquals("text/plain;charset=UTF-8", json.getContentType());
+            assertEquals("json", json.getFieldName());
+            assertEquals("text/plain;charset=UTF-8", json.getContentType());
             U jsonRequestPart = objectMapper.readValue(json.getString(), type);
-            Assertions.assertEquals(expectedJsonRequest, jsonRequestPart);
+            assertEquals(expectedJsonRequest, jsonRequestPart);
 
 
         } catch (InterruptedException | FileUploadException | IOException e) {
@@ -215,7 +219,7 @@ class AssemblylineClientTest {
                 .expectComplete()
                 .verify();
 
-        Assertions.assertEquals(session, assemblylineClient.getSession());
+        assertEquals(session, assemblylineClient.getSession());
     }
 
 
@@ -263,7 +267,7 @@ class AssemblylineClientTest {
                 .verify();
 
         RecordedRequest actualRequestToken = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
-        Assertions.assertEquals("Bearer " + authToken, actualRequestToken.getHeader(HttpHeaders.AUTHORIZATION));
+        assertEquals("Bearer " + authToken, actualRequestToken.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
     @Test
@@ -279,7 +283,7 @@ class AssemblylineClientTest {
                 .expectComplete()
                 .verify();
 
-        Assertions.assertEquals(session, assemblylineClient.getSession());
+        assertEquals(session, assemblylineClient.getSession());
     }
 
 
@@ -503,7 +507,7 @@ class AssemblylineClientTest {
 
         try {
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
-            Assertions.assertEquals("/api/v4/file/download/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/?encoding=cart", actualRequest.getPath());
+            assertEquals("/api/v4/file/download/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/?encoding=cart", actualRequest.getPath());
         } catch (InterruptedException ie) {
             Assertions.fail(ie);
         }
@@ -544,7 +548,7 @@ class AssemblylineClientTest {
                     + "?encoding=raw"
                     + "&name=" + name
                     + "&sid=" + sid;
-            Assertions.assertEquals(expectedPath, actualRequest.getPath());
+            assertEquals(expectedPath, actualRequest.getPath());
         } catch (InterruptedException ie) {
             Assertions.fail(ie);
         }
