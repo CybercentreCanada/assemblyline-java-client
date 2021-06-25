@@ -179,7 +179,7 @@ public class AssemblylineClient {
             return HttpClient.create().secure();
         }
 
-        isTrue(!Strings.isEmpty(proxyHost), "Proxy host, when set, must not be empty.");
+        hasLength(proxyHost, "Proxy host, when set, must not be empty.");
         notNull(proxyPort, "Proxy port must be set if proxy host is set.");
 
         log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, proxyPort);
