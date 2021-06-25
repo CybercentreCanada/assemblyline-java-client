@@ -542,18 +542,6 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testConstructor_invalidProxyPort() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort(0);
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                        new AssemblylineAuthenticationTestImpl()));
-        assertEquals("Proxy host provided without a valid port.", e.getMessage());
-    }
-
-    @Test
     void testConstructor_validProxyHostAndPort() {
 
         ProxyProperties invalidProxyProps = new ProxyProperties();

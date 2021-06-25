@@ -174,10 +174,6 @@ public class AssemblylineClient {
             return HttpClient.create().secure();
         }
 
-        if (proxyPort <= 0) {
-            throw new IllegalArgumentException("Proxy host provided without a valid port.");
-        }
-
         log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, proxyPort);
         return HttpClient.create().secure()
                 .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort));
@@ -409,10 +405,11 @@ public class AssemblylineClient {
                                         WebClientResponseException.create(
                                         e.getStatusCode().value(),
                                         e.getStatusText() + " : " +  errorMsg,
-                                            e.getHeaders(), e.getResponseBodyAsByteArray(),
-                                            //No getter for contentType
-                                            rc.headers().contentType().map(MimeType::getCharset)
-                                                    .orElse(StandardCharsets.ISO_8859_1), e.getRequest()))
+                                        e.getHeaders(),
+                                    e.getResponseBodyAsByteArray(),
+                                    //No getter for contentType
+                                    rc.headers().contentType().map(MimeType::getCharset)
+                                            .orElse(StandardCharsets.ISO_8859_1), e.getRequest()))
                     .flatMap(Mono::error)
                     );
         }
@@ -470,7 +467,7 @@ public class AssemblylineClient {
                 .uri(uriBuilder)
                 .contentType(contentType)
                 .headers(this::addAuthBearerHeader)
-                .body(bodyInserter).accept(MediaType.APPLICATION_JSON)
+                        .body(bodyInserter).accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(cr -> this.clientResponseToMono(cr, responseType)));
     }
 
