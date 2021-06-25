@@ -1,11 +1,22 @@
 package ca.gc.cyber.ops.assemblyline.java.client.clients;
 
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.AssemblylineAuthenticationMethod;
-import ca.gc.cyber.ops.assemblyline.java.client.model.*;
+import ca.gc.cyber.ops.assemblyline.java.client.model.DownloadFileParams;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileInfo;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileResultForService;
+import ca.gc.cyber.ops.assemblyline.java.client.model.FileResults;
+import ca.gc.cyber.ops.assemblyline.java.client.model.HashSearchResult;
+import ca.gc.cyber.ops.assemblyline.java.client.model.IngestResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.LoginResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.ResultBlock;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.NonBinaryIngest;
-import ca.gc.cyber.ops.assemblyline.java.client.model.submission.*;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.IngestSubmissionResponse;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.Submission;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionFileResults;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionFull;
+import ca.gc.cyber.ops.assemblyline.java.client.model.submission.SubmissionTree;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.NonBinarySubmit;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.SubmitMetadata;
 import ca.gc.cyber.ops.assemblyline.java.client.responses.AssemblylineApiResponse;
@@ -26,17 +37,25 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.client.reactive.ClientHttpRequest;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.*;
+import org.springframework.web.reactive.function.client.ClientRequest;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.ProxyProvider;
 import reactor.util.retry.Retry;
 
 import java.io.IOException;
@@ -51,6 +70,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static org.springframework.util.Assert.*;
 
 @Slf4j
 public class AssemblylineClient {
@@ -99,12 +120,13 @@ public class AssemblylineClient {
     private String authBearerToken;
 
     public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
-                              ObjectMapper defaultMapper, AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
+                              ProxyProperties proxyProperties, ObjectMapper defaultMapper,
+                              AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
         this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        this.buildWebClient(assemblylineClientProperties);
+        this.buildWebClient(assemblylineClientProperties, proxyProperties);
     }
 
     /**
@@ -129,16 +151,40 @@ public class AssemblylineClient {
         return newClient;
     }
 
-    protected void buildWebClient(AssemblylineClientProperties assemblylineClientProperties) {
+    protected void buildWebClient(AssemblylineClientProperties assemblylineClientProperties,
+                                  ProxyProperties proxyProperties) {
 
-        webClient = WebClient.builder()
+        HttpClient httpClient = createHttpClient(proxyProperties);
+
+        webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(clientCodecConfigurer -> {
-                    clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(this.mapper));
-                    clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(this.mapper));
-                })
-                .filter(addSession)
-                .baseUrl(assemblylineClientProperties.getUrl())
-                .build();
+                    clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(mapper));
+                    clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(mapper));
+                }).filter(addSession).baseUrl(assemblylineClientProperties.getUrl()).build();
+    }
+
+    /**
+     * Return an HttpClient that uses the proxy setup via the properties, if properties host and port are both set. If
+     * no proxy properties are set, a 'secure' Httpclient is returned without proxy configured.
+     *
+     * @return HttpClient
+     * @throws IllegalArgumentException If proxy port is not valid
+     */
+    private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
+        String proxyHost = proxyProperties.getHost();
+        Integer proxyPort = proxyProperties.getPort();
+
+        if (proxyHost == null) {
+            log.debug("No proxy host set. Assembly line client not configured to go through a proxy.");
+            return HttpClient.create().secure();
+        }
+
+        hasLength(proxyHost, "Proxy host, when set, must not be empty.");
+        notNull(proxyPort, "Proxy port must be set if proxy host is set.");
+
+        log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, proxyPort);
+        return HttpClient.create().secure()
+                .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort));
     }
 
     public Mono<LoginResponse> login() {
