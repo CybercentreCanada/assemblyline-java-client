@@ -108,7 +108,9 @@ public class AssemblylineClient {
     protected AssemblylineAuthenticationMethod assemblylineAuthenticationMethod;
 
     protected ExchangeFilterFunction addSession = (request, next) -> {
-        ClientRequest updatedRequest = ClientRequest.from(request).cookie(SESSION_COOKIE, session).build();
+        ClientRequest updatedRequest = ClientRequest.from(request)
+                .cookie(SESSION_COOKIE, session)
+                .build();
         return next.exchange(updatedRequest);
     };
 
@@ -237,7 +239,9 @@ public class AssemblylineClient {
     public Mono<IngestResponse> ingestUrlOrSha256(NonBinaryIngest ingest) {
 
         return post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
-        }, BodyInserters.fromValue(ingest), MediaType.APPLICATION_JSON);
+                },
+                BodyInserters.fromValue(ingest), MediaType.APPLICATION_JSON);
+
     }
 
     public Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest) {
@@ -245,20 +249,26 @@ public class AssemblylineClient {
         return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
-                }, multipartInserter, MediaType.MULTIPART_FORM_DATA));
+                        },
+                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+
     }
 
     public Flux<IngestSubmissionResponse> getIngestMessageList(String notification) {
 
         return get(buildUri(INGEST_GET_MESSAGE_LIST_URL, notification),
                 new ParameterizedTypeReference<AssemblylineApiResponse<List<IngestSubmissionResponse>>>() {
-                }).flatMapMany(Flux::fromIterable);
+                })
+                .flatMapMany(Flux::fromIterable);
+
     }
 
     public Mono<Submission> submitUrlOrSha256(NonBinarySubmit submit) {
 
         return post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
-        }, BodyInserters.fromValue(submit), MediaType.APPLICATION_JSON);
+                },
+                BodyInserters.fromValue(submit), MediaType.APPLICATION_JSON);
+
     }
 
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
@@ -266,22 +276,25 @@ public class AssemblylineClient {
         return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
-                }, multipartInserter, MediaType.MULTIPART_FORM_DATA));
+                        },
+                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
     }
 
     private Flux<DataBuffer> downloadFileAsFlux(String sha256, DownloadFileParams params) {
-        return webClient.get().uri(uriBuilder -> {
-            uriBuilder.path(FILE_DOWNLOAD_URL).queryParam("encoding", params.getEncoding().name().toLowerCase());
+        return webClient.get()
+                .uri(uriBuilder -> {
+                    uriBuilder.path(FILE_DOWNLOAD_URL)
+                            .queryParam("encoding", params.getEncoding().name().toLowerCase());
 
-            if (!Strings.isBlank(params.getName())) {
-                uriBuilder.queryParam("name", params.getName());
-            }
+                    if (!Strings.isBlank(params.getName())) {
+                        uriBuilder.queryParam("name", params.getName());
+                    }
 
-            if (!Strings.isBlank(params.getSid())) {
-                uriBuilder.queryParam("sid", params.getSid());
-            }
+                    if (!Strings.isBlank(params.getSid())) {
+                        uriBuilder.queryParam("sid", params.getSid());
+                    }
 
-            return uriBuilder.build(sha256);
+                    return uriBuilder.build(sha256);
                 })
                 .headers(this::addAuthBearerHeader)
                 .exchangeToFlux(cr ->
@@ -321,8 +334,9 @@ public class AssemblylineClient {
             }
         };
 
-        Flux<DataBuffer> bufferFlux =
-                downloadFileAsFlux(sha256, params).doOnError(handleError).doFinally(signalType -> {
+        Flux<DataBuffer> bufferFlux = downloadFileAsFlux(sha256, params)
+                .doOnError(handleError)
+                .doFinally(signalType -> {
                     //Once all the DataBuffers have been read, close the PipedOutputStream to send EOF to the PipedInputStream.
                     try {
                         writablePipeEnd.close();
@@ -331,11 +345,13 @@ public class AssemblylineClient {
                     }
                 });
 
-        DataBufferUtils.write(bufferFlux, writablePipeEnd).doOnError(handleError)
+        DataBufferUtils.write(bufferFlux, writablePipeEnd)
+                .doOnError(handleError)
                 /* We need this subscribe() for two reasons:
                  *   1. The write() won't actually start until it is subscribed to.
                  *   2. write() does not release the DataBuffers, so we need to do that ourselves.
-                 */.subscribe(DataBufferUtils.releaseConsumer());
+                 */
+                .subscribe(DataBufferUtils.releaseConsumer());
 
         return readablePipeEnd;
     }
@@ -381,13 +397,15 @@ public class AssemblylineClient {
 
     protected void setSession(ClientResponse clientResponse) {
         Optional.ofNullable(clientResponse.cookies().get(SESSION_COOKIE))
-                .flatMap(sessionCookie -> sessionCookie.stream().findFirst().map(HttpCookie::getValue))
+                .flatMap(sessionCookie -> sessionCookie.stream().findFirst()
+                        .map(HttpCookie::getValue))
                 .ifPresent(s -> session = s);
     }
 
     protected <T> Mono<T> retryWrapper(Mono<T> monoContent) {
-        return monoContent.retryWhen(
-                Retry.max(1).filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
+        return monoContent
+                .retryWhen(Retry.max(1)
+                        .filter(throwable -> throwable instanceof WebClientResponseException.Unauthorized)
                         .doBeforeRetryAsync(retrySignal ->
                                 this.login().then()));
     }
@@ -396,7 +414,7 @@ public class AssemblylineClient {
         if (rc.statusCode().is4xxClientError()) {
             return rc.createException().flatMap(Mono::error);
         }
-        if (rc.statusCode().is5xxServerError()) {
+        if (rc.statusCode().is5xxServerError()){
             return rc.createException()
                     .flatMap(e ->
                         Mono.fromCallable(() -> this.extractApiErrorMessage(e))
@@ -406,10 +424,12 @@ public class AssemblylineClient {
                                         e.getStatusCode().value(),
                                         e.getStatusText() + " : " +  errorMsg,
                                         e.getHeaders(),
-                                    e.getResponseBodyAsByteArray(),
-                                    //No getter for contentType
-                                    rc.headers().contentType().map(MimeType::getCharset)
-                                            .orElse(StandardCharsets.ISO_8859_1), e.getRequest()))
+                                        e.getResponseBodyAsByteArray(),
+                                        //No getter for contentType
+                                        rc.headers().contentType()
+                                                .map(MimeType::getCharset)
+                                                .orElse(StandardCharsets.ISO_8859_1),
+                                        e.getRequest()))
                     .flatMap(Mono::error)
                     );
         }
@@ -462,12 +482,14 @@ public class AssemblylineClient {
      */
     protected <T> Mono<T> post(Function<UriBuilder, URI> uriBuilder,
                                ParameterizedTypeReference<AssemblylineApiResponse<T>> responseType,
-                               BodyInserter<?, ? super ClientHttpRequest> bodyInserter, MediaType contentType) {
+                               BodyInserter<?, ? super ClientHttpRequest> bodyInserter,
+                               MediaType contentType) {
         return this.retryWrapper(webClient.post()
                 .uri(uriBuilder)
                 .contentType(contentType)
                 .headers(this::addAuthBearerHeader)
-                        .body(bodyInserter).accept(MediaType.APPLICATION_JSON)
+                .body(bodyInserter)
+                .accept(MediaType.APPLICATION_JSON)
                 .exchangeToMono(cr -> this.clientResponseToMono(cr, responseType)));
     }
 
@@ -494,13 +516,11 @@ public class AssemblylineClient {
      * @param templateArgs Values to substitute into the template
      * @return A UriBuilder
      */
-    private Function<UriBuilder, URI> buildUriWithParams(String pathTemplate, Map<String, String> params,
-                                                         Object... templateArgs) {
+    private Function<UriBuilder, URI> buildUriWithParams(String pathTemplate, Map<String, String> params, Object... templateArgs) {
         /* If the path doesn't end with a "/", Assemblyline returns a redirect. If we try to follow the redirect,
         authentication (and by extension the entire request) fails. */
         if (!pathTemplate.endsWith("/")) {
-            throw new IllegalArgumentException(
-                    "Request URI path template does not end with a slash. URI = " + pathTemplate);
+            throw new IllegalArgumentException("Request URI path template does not end with a slash. URI = " + pathTemplate);
         }
         return uriBuilder -> {
             uriBuilder.path(pathTemplate);
@@ -517,8 +537,7 @@ public class AssemblylineClient {
         };
     }
 
-    private BodyInserters.MultipartInserter multipartInserterFromBinaryIngest(BinaryFile<?> binaryFile)
-            throws JsonProcessingException {
+    private BodyInserters.MultipartInserter multipartInserterFromBinaryIngest(BinaryFile<?> binaryFile) throws JsonProcessingException {
         ByteArrayResource bar = new ByteArrayResource(binaryFile.getFile());
         MultipartBodyBuilder mbb = new MultipartBodyBuilder();
         mbb.part(MULTIPART_MSG_BINARY_PART, bar).filename(binaryFile.getFilename());
@@ -530,6 +549,7 @@ public class AssemblylineClient {
         if (authBearerToken != null) {
             httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + authBearerToken);
         }
+
     }
 
     /**
@@ -548,6 +568,8 @@ public class AssemblylineClient {
     protected <T> Mono<T> clientResponseToMono(ClientResponse clientResponse,
                                                ParameterizedTypeReference<AssemblylineApiResponse<T>> type) {
         return this.checkForException(clientResponse)
-                .flatMap(c -> c.bodyToMono(type).map(AssemblylineApiResponse::getApiResponse));
+                .flatMap(c -> c.bodyToMono(type)
+                        .map(AssemblylineApiResponse::getApiResponse));
     }
+
 }
