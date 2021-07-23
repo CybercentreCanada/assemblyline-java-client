@@ -3,7 +3,6 @@ package ca.gc.cyber.ops.assemblyline.java.client.clients;
 import ca.gc.cyber.ops.assemblyline.java.client.model.DownloadFileParams;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Data;
@@ -142,7 +141,7 @@ class AssemblylineClientTest {
 
     }
 
-    private <T> void verifyHttpPostResponse(Mono<T> actualResult, T expectedResult){
+    private <T> void verifyHttpPostResponse(Mono<T> actualResult, T expectedResult) {
         StepVerifier.create(actualResult)
                 .expectNext(expectedResult)
                 .expectComplete()
@@ -164,7 +163,7 @@ class AssemblylineClientTest {
         try {
             RecordedRequest actualRequest = mockBackEnd.takeRequest(5, TimeUnit.SECONDS);
             assertEquals(expectedPath, actualRequest.getPath());
-            /* JSONAsert will check the structure of the JSON, which is nicer than comparing strings with irrelevant
+            /* JSONAssert will check the structure of the JSON, which is nicer than comparing strings with irrelevant
             whitespace or ordering differences. */
             JSONAssert.assertEquals(expectedRequestBody, actualRequest.getBody().readUtf8(), false);
         } catch (InterruptedException | JSONException ie) {
@@ -172,9 +171,8 @@ class AssemblylineClientTest {
         }
     }
 
-    private <T, U> void verifyHttpPostJsonMuliformData(Mono<T> actualResult, T expectedResult, String expectedPath,
-                                                       TypeReference<U> type, U expectedJsonRequest,
-                                                       byte[] binData) {
+    private <T> void verifyHttpPostJsonMultiformData(Mono<T> actualResult, T expectedResult, String expectedPath,
+                                                        String expectedJsonRequest, byte[] binData) {
 
         this.verifyHttpPostResponse(actualResult, expectedResult);
         try {
@@ -185,7 +183,7 @@ class AssemblylineClientTest {
             MockHttpServletRequest requestContext = new MockHttpServletRequest("POST", actualRequest.getRequestUrl().uri().toString());
             requestContext.setCharacterEncoding(actualRequest.getHeader("Content-Type"));
             requestContext.setContent(actualRequest.getBody().readByteArray());
-            actualRequest.getHeaders().toMultimap().forEach((e,v) -> requestContext.addHeader(e, v.get(0)));
+            actualRequest.getHeaders().toMultimap().forEach((e, v) -> requestContext.addHeader(e, v.get(0)));
             final FileItemFactory factory = new DiskFileItemFactory();
             final ServletFileUpload upload = new ServletFileUpload(factory);
             final List<FileItem> items = upload.parseRequest(requestContext);
@@ -198,11 +196,10 @@ class AssemblylineClientTest {
 
             assertEquals("json", json.getFieldName());
             assertEquals("text/plain;charset=UTF-8", json.getContentType());
-            U jsonRequestPart = objectMapper.readValue(json.getString(), type);
-            assertEquals(expectedJsonRequest, jsonRequestPart);
+            JSONAssert.assertEquals(expectedJsonRequest, json.getString(), false);
 
 
-        } catch (InterruptedException | FileUploadException | IOException e) {
+        } catch (InterruptedException | FileUploadException | JSONException e) {
             Assertions.fail(e);
         }
     }
@@ -338,11 +335,10 @@ class AssemblylineClientTest {
                         .setBody(MockResponseModels.getInternalErrorJson()).setResponseCode(500)
                         .addHeader("Content-Type", "application/json"));
         StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
-            .expectErrorMatches(e -> e instanceof WebClientResponseException.InternalServerError &&
-                    e.getMessage().contains("Message from Assemblyline"))
-            .verify();
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.InternalServerError &&
+                        e.getMessage().contains("Message from Assemblyline"))
+                .verify();
     }
-
 
 
     @Test
@@ -426,9 +422,9 @@ class AssemblylineClientTest {
 
         mockResponse(MockResponseModels.getIngestResponseJson());
 
-        this.verifyHttpPostJsonMuliformData(this.assemblylineClient.ingestBinary(RequestModels.getBinaryIngestObject()),
+        this.verifyHttpPostJsonMultiformData(this.assemblylineClient.ingestBinary(RequestModels.getBinaryIngestObject()),
                 MockResponseModels.getIngestResponse(), "/api/v4/ingest/",
-                new TypeReference<>() {}, RequestModels.getBinaryIngestBaseObject(),
+                RequestModels.getBinaryIngestBaseJson(),
                 RequestModels.getBinaryData());
     }
 
@@ -463,9 +459,9 @@ class AssemblylineClientTest {
     void testSubmit() {
         mockResponse(MockResponseModels.getSubmissionJson());
 
-        this.verifyHttpPostJsonMuliformData(this.assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()),
+        this.verifyHttpPostJsonMultiformData(this.assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()),
                 MockResponseModels.getSubmission(), "/api/v4/submit/",
-                new TypeReference<>() {}, RequestModels.getBinarySubmitMetadata(),
+                RequestModels.getBinarySubmitMetadataJson(),
                 RequestModels.getBinaryData());
 
     }
