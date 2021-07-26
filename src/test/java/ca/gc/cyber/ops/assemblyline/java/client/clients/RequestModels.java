@@ -65,7 +65,14 @@ public class RequestModels {
         return BinaryFile.<IngestBase>builder()
                 .filename("fileName")
                 .file(new byte[]{1, 2, 3})
-                .metadata(getBinaryIngestBaseObject())
+                .metadata(IngestBase.builder()
+                        .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
+                        .params(Map.of("param1", "value1"))
+                        .name("meta data")
+                        .generateAlert(true)
+                        .notificationQueue("notificationQueue")
+                        .notificationThreshold(100)
+                        .build())
                 .build();
     }
 
@@ -73,15 +80,8 @@ public class RequestModels {
         return new byte[]{1, 2, 3};
     }
 
-    public IngestBase getBinaryIngestBaseObject() {
-        return IngestBase.builder()
-                .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
-                .params(Map.of("param1", "value1"))
-                .name("meta data")
-                .generateAlert(true)
-                .notificationQueue("notificationQueue")
-                .notificationThreshold(100)
-                .build();
+    public String getBinaryIngestBaseJson() {
+        return readTestJson("binary_ingest.json");
     }
 
     public String getSha256SubmitJson() {
@@ -92,16 +92,16 @@ public class RequestModels {
         return BinaryFile.<SubmitMetadata>builder()
                 .filename("fileName")
                 .file(getBinaryData())
-                .metadata(getBinarySubmitMetadata())
+                .metadata(SubmitMetadata.builder()
+                        .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
+                        .params(Map.of("param1", "value1"))
+                        .name("meta data")
+                        .build())
                 .build();
     }
 
-    public SubmitMetadata getBinarySubmitMetadata() {
-        return SubmitMetadata.builder()
-                .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
-                .params(Map.of("param1", "value1"))
-                .name("meta data")
-                .build();
+    public String getBinarySubmitMetadataJson() {
+        return readTestJson("submit.json");
     }
 
     public UrlIngest getUrlIngestObject() {
