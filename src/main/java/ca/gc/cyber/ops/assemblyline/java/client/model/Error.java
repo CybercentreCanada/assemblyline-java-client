@@ -63,8 +63,8 @@ public class Error {
         Status status;
 
         public enum Status {
-            @JsonProperty("FAIL_UNRECOVERABLE")
-            FAIL_UNRECOVERABLE,
+            @JsonProperty("FAIL_NONRECOVERABLE")
+            FAIL_NONRECOVERABLE,
             @JsonProperty("FAIL_RECOVERABLE")
             FAIL_RECOVERABLE;
         }
