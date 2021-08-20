@@ -352,6 +352,19 @@ class AssemblylineClientTest {
     }
 
     @Test
+    void testSubmitBadRequest() {
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setBody(MockResponseModels.getBadRequestJson()).setResponseCode(400)
+                        .addHeader("Content-Type", "application/json"));
+        // We don't really care about the request content here; we just want *something* to trigger the mocked response.
+        StepVerifier.create(this.assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()))
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.BadRequest &&
+                        e.getMessage().contains("You cannot start a scan with higher classification then you're allowed to see"))
+                .verify();
+    }
+
+    @Test
     void testGetFileInfo() {
         mockResponse(MockResponseModels.getFileInfoJson());
 

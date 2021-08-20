@@ -34,6 +34,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.client.reactive.ClientHttpRequest;
@@ -417,10 +418,12 @@ public class AssemblylineClient {
     }
 
     private Mono<ClientResponse> checkForException(ClientResponse rc) {
-        if (rc.statusCode().is4xxClientError()) {
+        // UNAUTHORIZED needs special handling because it is what triggers a login attempt further down the processing chain.
+        if (HttpStatus.UNAUTHORIZED.equals(rc.statusCode())) {
             return rc.createException().flatMap(Mono::error);
         }
-        if (rc.statusCode().is5xxServerError()){
+
+        if (rc.statusCode().isError()){
             return rc.createException()
                     .flatMap(e ->
                         Mono.fromCallable(() -> this.extractApiErrorMessage(e))
@@ -444,7 +447,8 @@ public class AssemblylineClient {
     }
 
     private String extractApiErrorMessage(WebClientResponseException exception) throws JsonProcessingException {
-        AssemblylineApiResponse<String> response = mapper.readValue(exception.getResponseBodyAsString(),
+        // We're just reading the error message out of the response, so we don't really care about the type parameter.
+        AssemblylineApiResponse<Object> response = mapper.readValue(exception.getResponseBodyAsString(),
                 new TypeReference<>() {});
         return response.getApiErrorMessage();
     }

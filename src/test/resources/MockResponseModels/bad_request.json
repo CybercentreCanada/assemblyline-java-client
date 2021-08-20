@@ -1,0 +1,6 @@
+{
+  "api_error_message":"You cannot start a scan with higher classification then you're allowed to see",
+  "api_response":{},
+  "api_server_version":"4.0.0",
+  "api_status_code":400
+}
