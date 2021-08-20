@@ -1,0 +1,14 @@
+{
+  "api_error_message": "Session rejected",
+  "api_response": {
+    "allow_pw_rest": false,
+    "allow_signup": false,
+    "allow_userpass_login": true,
+    "oauth_providers": [
+      "provider1",
+      "provider2"
+    ]
+  },
+  "api_server_version": "4.0.0",
+  "api_status_code": 401
+}

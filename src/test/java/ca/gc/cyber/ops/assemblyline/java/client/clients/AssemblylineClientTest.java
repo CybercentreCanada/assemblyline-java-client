@@ -223,7 +223,9 @@ class AssemblylineClientTest {
     @Test
     void testLoginFailed() {
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
         Assertions.assertTrue(assemblylineClient.getSession().isEmpty());
 
@@ -300,7 +302,9 @@ class AssemblylineClientTest {
     @Test
     void testIsSubmissionCompleteRetry() {
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getLoginResponseJson())
                 .addHeader("Content-Type", "application/json"));
@@ -314,17 +318,20 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testIsSubmissionCompleteUnauthorizedTwice() {
+    void testIsSubmissionCompleteAutoLoginFailed() {
+        // The first 401 is caused by a lack of session token. This will cause the client to attempt a login.
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
-
-        mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getLoginResponseJson())
-                .addHeader("Content-Type", "application/json"));
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        // The first 401 then triggers a login attempt, which we mock as failing. We expect this failure to be propagated back to the user.
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.invalidApiKeyJson()));
 
         StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
-                .expectErrorMatches(e -> Exceptions.isRetryExhausted(e) &&
-                        e.getCause() instanceof WebClientResponseException.Unauthorized)
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.Unauthorized
+                    && e.getMessage().contains("Invalid apikey"))
                 .verify();
     }
 
