@@ -1219,9 +1219,33 @@ public final class MockResponseModels {
     public static String getInternalErrorJson() {
         /* The object returned by this method must be equivalent to a serialized copy of the object returned when
         Assemblyline returns an internal error. However, it should not literally return a serialized copy of the object.
-        The result of thismethod is supposed to represent real output from Assemblyline that will be input for a
+        The result of this method is supposed to represent real output from Assemblyline that will be input for a
         deserializer whose deserialization we are testing.*/
         return readTestJson("internal_error.json");
+    }
+
+    public static String getBadRequestJson() {
+        /* The object returned by this method must be equivalent to a serialized copy of the object returned when
+        Assemblyline returns an 400 error. However, it should not literally return a serialized copy of the object.
+        The result of this method is supposed to represent real output from Assemblyline that will be input for a
+        deserializer whose deserialization we are testing.*/
+        return readTestJson("bad_request.json");
+    }
+
+    public static String notLoggedInJson() {
+        /* The object returned by this method must be equivalent to a serialized copy of the object returned when
+        Assemblyline returns an 401 error for a user that has not logged in yet. However, it should not literally
+        return a serialized copy of the object. The result of this method is supposed to represent real output from
+        Assemblyline that will be input for a deserializer whose deserialization we are testing.*/
+        return readTestJson("not_logged_in.json");
+    }
+
+    public static String invalidApiKeyJson() {
+        /* The object returned by this method must be equivalent to a serialized copy of the object returned when
+        Assemblyline returns an 401 error for an invalid API key. However, it should not literally return a serialized
+        copy of the object. The result of this method is supposed to represent real output from Assemblyline that will
+        be input for a deserializer whose deserialization we are testing.*/
+        return readTestJson("invalid_apikey.json");
     }
 
 }

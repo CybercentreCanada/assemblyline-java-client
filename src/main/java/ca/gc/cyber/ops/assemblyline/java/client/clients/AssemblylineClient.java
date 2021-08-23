@@ -40,7 +40,6 @@ import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
-import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.BodyInserter;
@@ -71,7 +70,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.springframework.util.Assert.*;
+import static org.springframework.util.Assert.hasLength;
+import static org.springframework.util.Assert.notNull;
 
 @Slf4j
 public class AssemblylineClient {
@@ -417,10 +417,7 @@ public class AssemblylineClient {
     }
 
     private Mono<ClientResponse> checkForException(ClientResponse rc) {
-        if (rc.statusCode().is4xxClientError()) {
-            return rc.createException().flatMap(Mono::error);
-        }
-        if (rc.statusCode().is5xxServerError()){
+        if (rc.statusCode().isError()){
             return rc.createException()
                     .flatMap(e ->
                         Mono.fromCallable(() -> this.extractApiErrorMessage(e))
@@ -444,7 +441,9 @@ public class AssemblylineClient {
     }
 
     private String extractApiErrorMessage(WebClientResponseException exception) throws JsonProcessingException {
-        AssemblylineApiResponse<String> response = mapper.readValue(exception.getResponseBodyAsString(),
+        /* We're just reading the error message out of the response, so we don't really care about the type parameter.
+        Sometimes it's an empty string, other times it's an empty object/map. */
+        AssemblylineApiResponse<Object> response = mapper.readValue(exception.getResponseBodyAsString(),
                 new TypeReference<>() {});
         return response.getApiErrorMessage();
     }

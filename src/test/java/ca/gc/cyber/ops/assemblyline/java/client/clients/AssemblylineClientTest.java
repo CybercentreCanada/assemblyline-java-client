@@ -223,7 +223,9 @@ class AssemblylineClientTest {
     @Test
     void testLoginFailed() {
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
         Assertions.assertTrue(assemblylineClient.getSession().isEmpty());
 
@@ -298,9 +300,11 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testIsSubmissionCompleteRetry() {
+    void testIsSubmissionCompleteRetryWithLogin() {
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
         mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getLoginResponseJson())
                 .addHeader("Content-Type", "application/json"));
@@ -314,17 +318,20 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testIsSubmissionCompleteUnauthorizedTwice() {
+    void testIsSubmissionCompleteRetryWithLoginFailed() {
+        // The first 401 is caused by a lack of session token. This will cause the client to attempt a login.
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.notLoggedInJson()));
 
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
-
-        mockBackEnd.enqueue(new MockResponse().setBody(MockResponseModels.getLoginResponseJson())
-                .addHeader("Content-Type", "application/json"));
-        mockBackEnd.enqueue(new MockResponse().setResponseCode(401));
+        // The first 401 then triggers a login attempt, which we mock as failing. We expect this failure to be propagated back to the user.
+        mockBackEnd.enqueue(new MockResponse()
+                .setResponseCode(401)
+                .setBody(MockResponseModels.invalidApiKeyJson()));
 
         StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
-                .expectErrorMatches(e -> Exceptions.isRetryExhausted(e) &&
-                        e.getCause() instanceof WebClientResponseException.Unauthorized)
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.Unauthorized
+                    && e.getMessage().contains("Invalid apikey"))
                 .verify();
     }
 
@@ -348,6 +355,19 @@ class AssemblylineClientTest {
                         .setBody("testErrorNotJson").setResponseCode(500));
         StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
                 .expectErrorMatches(e -> e instanceof JsonParseException)
+                .verify();
+    }
+
+    @Test
+    void testSubmitBadRequest() {
+        mockBackEnd.enqueue(
+                new MockResponse()
+                        .setBody(MockResponseModels.getBadRequestJson()).setResponseCode(400)
+                        .addHeader("Content-Type", "application/json"));
+        // We don't really care about the request content here; we just want *something* to trigger the mocked response.
+        StepVerifier.create(this.assemblylineClient.submitBinary(RequestModels.getBinarySubmitObject()))
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.BadRequest &&
+                        e.getMessage().contains("You cannot start a scan with higher classification then you're allowed to see"))
                 .verify();
     }
 
