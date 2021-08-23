@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -124,7 +124,7 @@ public class AssemblylineClient {
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
         this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.buildWebClient(assemblylineClientProperties, proxyProperties);
     }
@@ -182,7 +182,7 @@ public class AssemblylineClient {
         hasLength(proxyHost, "Proxy host, when set, must not be empty.");
         notNull(proxyPort, "Proxy port must be set if proxy host is set.");
 
-        log.debug("AssemblylineClient web client is configured to use the proxy %s on port %s.", proxyHost, proxyPort);
+        log.debug("AssemblylineClient web client is configured to use the proxy {} on port {}.", proxyHost, proxyPort);
         return HttpClient.create().secure()
                 .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort));
     }
