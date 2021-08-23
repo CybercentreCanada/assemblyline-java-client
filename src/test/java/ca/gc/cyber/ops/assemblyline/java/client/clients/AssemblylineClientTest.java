@@ -31,6 +31,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import java.io.ByteArrayOutputStream;
@@ -74,9 +75,11 @@ class AssemblylineClientTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
 
+        HttpClient httpClient = HttpClient.create().secure();
+
         this.assemblylineClientProperties.setUrl(String.format("http://localhost:%s",
                 mockBackEnd.getPort()));
-        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, proxyProperties, defaultMapper,
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
                 new AssemblylineAuthenticationTestImpl());
         objectMapper = defaultMapper.copy();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -605,29 +608,6 @@ class AssemblylineClientTest {
 
         verifyHttpGet(this.assemblylineClient.getIngestMessageList("test_java_client"),
                 "/api/v4/ingest/get_message_list/test_java_client/", MockResponseModels.getIngestMessageList());
-    }
-
-    @Test
-    void testConstructorNullProxyPort() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                        new AssemblylineAuthenticationTestImpl()));
-        assertEquals("Proxy port must be set if proxy host is set.", e.getMessage());
-    }
-
-    @Test
-    void testConstructorWithValidProxyHostAndPort() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort(1234);
-        new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                new AssemblylineAuthenticationTestImpl());
-
-        // Should not throw any exception
     }
 
     @Data

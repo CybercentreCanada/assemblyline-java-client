@@ -54,7 +54,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
 import reactor.util.retry.Retry;
 
 import java.io.IOException;
@@ -69,9 +68,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import static org.springframework.util.Assert.hasLength;
-import static org.springframework.util.Assert.notNull;
 
 @Slf4j
 public class AssemblylineClient {
@@ -120,13 +116,13 @@ public class AssemblylineClient {
     private String authBearerToken;
 
     public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
-                              ProxyProperties proxyProperties, ObjectMapper defaultMapper,
+                              HttpClient httpClient, ObjectMapper defaultMapper,
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
         this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        this.buildWebClient(assemblylineClientProperties, proxyProperties);
+        this.buildWebClient(assemblylineClientProperties, httpClient);
     }
 
     /**
@@ -152,39 +148,16 @@ public class AssemblylineClient {
     }
 
     protected void buildWebClient(AssemblylineClientProperties assemblylineClientProperties,
-                                  ProxyProperties proxyProperties) {
-
-        HttpClient httpClient = createHttpClient(proxyProperties);
-
-        webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient))
+                                  HttpClient httpClient) {
+        webClient = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(clientCodecConfigurer -> {
                     clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(mapper));
                     clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(mapper));
-                }).filter(addSession).baseUrl(assemblylineClientProperties.getUrl()).build();
-    }
-
-    /**
-     * Return an HttpClient that uses the proxy setup via the properties, if properties host and port are both set. If
-     * no proxy properties are set, a 'secure' Httpclient is returned without proxy configured.
-     *
-     * @return HttpClient
-     * @throws IllegalArgumentException If proxy port is not valid
-     */
-    private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
-        String proxyHost = proxyProperties.getHost();
-        Integer proxyPort = proxyProperties.getPort();
-
-        if (proxyHost == null) {
-            log.debug("No proxy host set. Assembly line client not configured to go through a proxy.");
-            return HttpClient.create().secure();
-        }
-
-        hasLength(proxyHost, "Proxy host, when set, must not be empty.");
-        notNull(proxyPort, "Proxy port must be set if proxy host is set.");
-
-        log.debug("AssemblylineClient web client is configured to use the proxy {} on port {}.", proxyHost, proxyPort);
-        return HttpClient.create().secure()
-                .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort));
+                })
+                .filter(addSession)
+                .baseUrl(assemblylineClientProperties.getUrl())
+                .build();
     }
 
     public Mono<LoginResponse> login() {
