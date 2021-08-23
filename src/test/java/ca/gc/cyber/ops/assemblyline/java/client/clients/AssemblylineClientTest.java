@@ -300,7 +300,7 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testIsSubmissionCompleteRetry() {
+    void testIsSubmissionCompleteRetryWithLogin() {
 
         mockBackEnd.enqueue(new MockResponse()
                 .setResponseCode(401)
@@ -318,7 +318,7 @@ class AssemblylineClientTest {
     }
 
     @Test
-    void testIsSubmissionCompleteAutoLoginFailed() {
+    void testIsSubmissionCompleteRetryWithLoginFailed() {
         // The first 401 is caused by a lack of session token. This will cause the client to attempt a login.
         mockBackEnd.enqueue(new MockResponse()
                 .setResponseCode(401)
