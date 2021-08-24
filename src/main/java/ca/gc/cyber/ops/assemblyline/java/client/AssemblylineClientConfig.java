@@ -56,19 +56,23 @@ public class AssemblylineClientConfig {
      * @throws IllegalArgumentException If proxy port is not valid
      */
     private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
-        String proxyHost = proxyProperties.getHost();
-        Integer proxyPort = proxyProperties.getPort();
+        HttpClient httpClient = HttpClient.create().secure();
 
-        if (proxyHost == null) {
+        String proxyHost = proxyProperties.getHost();
+        if (proxyHost != null) {
+            Integer proxyPort = proxyProperties.getPort();
+            hasLength(proxyHost, "Proxy host, when set, must not be empty.");
+            notNull(proxyPort, "Proxy port must be set if proxy host is set.");
+
+            log.debug("HTTP client is configured to use the proxy {} on port {}.", proxyHost, proxyPort);
+            httpClient = httpClient.proxy(proxy -> proxy
+                    .type(ProxyProvider.Proxy.HTTP)
+                    .host(proxyHost)
+                    .port(proxyPort));
+        } else {
             log.debug("No proxy host set. HTTP client will not be configured to go through a proxy.");
-            return HttpClient.create().secure();
         }
 
-        hasLength(proxyHost, "Proxy host, when set, must not be empty.");
-        notNull(proxyPort, "Proxy port must be set if proxy host is set.");
-
-        log.debug("HTTP client is configured to use the proxy {} on port {}.", proxyHost, proxyPort);
-        return HttpClient.create().secure()
-                .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort));
+        return httpClient;
     }
 }
