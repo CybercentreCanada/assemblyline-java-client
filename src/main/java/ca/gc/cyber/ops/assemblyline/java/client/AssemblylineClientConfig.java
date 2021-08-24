@@ -2,6 +2,7 @@ package ca.gc.cyber.ops.assemblyline.java.client;
 
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.ApikeyAuthProperties;
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.ApikeyAuthentication;
+import ca.gc.cyber.ops.assemblyline.java.client.authentication.AssemblylineAuthenticationMethod;
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.PasswordAuthProperties;
 import ca.gc.cyber.ops.assemblyline.java.client.authentication.PasswordAuthentication;
 import ca.gc.cyber.ops.assemblyline.java.client.clients.AssemblylineClient;
@@ -27,25 +28,25 @@ import static org.springframework.util.Assert.notNull;
 public class AssemblylineClientConfig {
 
     @Bean
-    @ConditionalOnProperty(name = "assemblyline-java-client.auth-method", havingValue = "apikey")
-    public AssemblylineClient assemblylineClientApiAuth(ApikeyAuthProperties apikeyAuthProperties,
-                                                        ObjectMapper defaultMapper,
-                                                        AssemblylineClientProperties assemblylineClientProperties,
-                                                        ProxyProperties proxyProperties) {
-        ApikeyAuthentication apikeyAuthentication = new ApikeyAuthentication(apikeyAuthProperties);
+    @ConditionalOnProperty("assemblyline-java-client.url")
+    public AssemblylineClient assemblylineClient(AssemblylineAuthenticationMethod authMethod,
+                                                 ObjectMapper defaultMapper,
+                                                 AssemblylineClientProperties assemblylineClientProperties,
+                                                 ProxyProperties proxyProperties) {
         return new AssemblylineClient(assemblylineClientProperties, createHttpClient(proxyProperties), defaultMapper,
-                apikeyAuthentication);
+                authMethod);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "assemblyline-java-client.auth-method", havingValue = "apikey")
+    public AssemblylineAuthenticationMethod assemblylineClientApiAuth(ApikeyAuthProperties apikeyAuthProperties) {
+        return new ApikeyAuthentication(apikeyAuthProperties);
     }
 
     @Bean
     @ConditionalOnProperty(name = "assemblyline-java-client.auth-method", havingValue = "password")
-    public AssemblylineClient assemblyLineClientPasswordAuth(PasswordAuthProperties passwordAuthProperties,
-                                                             ObjectMapper defaultMapper,
-                                                             AssemblylineClientProperties assemblyLineClientProperties,
-                                                             ProxyProperties proxyProperties) {
-        PasswordAuthentication passwordAuthentication = new PasswordAuthentication(passwordAuthProperties);
-        return new AssemblylineClient(assemblyLineClientProperties, createHttpClient(proxyProperties), defaultMapper,
-                passwordAuthentication);
+    public AssemblylineAuthenticationMethod assemblyLineClientPasswordAuth(PasswordAuthProperties passwordAuthProperties) {
+        return new PasswordAuthentication(passwordAuthProperties);
     }
 
     /**
