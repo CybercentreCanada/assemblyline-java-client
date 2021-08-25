@@ -10,6 +10,7 @@ import ca.gc.cyber.ops.assemblyline.java.client.clients.AssemblylineClientProper
 import ca.gc.cyber.ops.assemblyline.java.client.clients.ProxyProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +30,10 @@ public class AssemblylineClientConfig {
 
     @Bean
     @ConditionalOnProperty("assemblyline-java-client.url")
-    public AssemblylineClient assemblylineClient(AssemblylineAuthenticationMethod authMethod,
+    public AssemblylineClient assemblylineClient(HttpClient httpClient, AssemblylineAuthenticationMethod authMethod,
                                                  ObjectMapper defaultMapper,
-                                                 AssemblylineClientProperties assemblylineClientProperties,
-                                                 ProxyProperties proxyProperties) {
-        return new AssemblylineClient(assemblylineClientProperties, createHttpClient(proxyProperties), defaultMapper,
+                                                 AssemblylineClientProperties assemblylineClientProperties) {
+        return new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
                 authMethod);
     }
 
@@ -56,7 +56,9 @@ public class AssemblylineClientConfig {
      * @return HttpClient
      * @throws IllegalArgumentException If proxy port is not valid
      */
-    private static HttpClient createHttpClient(ProxyProperties proxyProperties) {
+    @Bean
+    @ConditionalOnMissingBean
+    public HttpClient httpClient(ProxyProperties proxyProperties) {
         HttpClient httpClient = HttpClient.create().secure();
 
         String proxyHost = proxyProperties.getHost();
