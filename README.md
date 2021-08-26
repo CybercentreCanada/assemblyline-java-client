@@ -20,7 +20,7 @@ To instantiate an API key authenticated assemblyline client, define the followin
 
 ### Password Authentication
 
-To instantiate a password authenticated assemblyline client, define the following properties:
+To instantiate a password-authenticated assemblyline client, define the following properties:
 
     assemblyline-java-client:
         url: <assemblyline-instance-url>
@@ -28,12 +28,29 @@ To instantiate a password authenticated assemblyline client, define the followin
             password: <password>
             username: <username>
  
-### Proxy
+### HttpClient Configuration
 
-To go through a proxy, add the following properties:
+By default, the AssemblyLine client will use an HttpClient with default settings and HTTPS support.
 
-    assemblyline-java-client:
-        proxy:
-            host: <host>
-            port: <port>
- 
+#### Proxy
+To go through a proxy, there are two options.
+1. Use the standard JVM options (```-Dhttp.proxyHost```, ```-Dhttp.proxyPort```, etc)
+2. Configure a custom ```reactor.netty.httpclient.HttpClient``` bean that includes proxy settings.
+
+Example of proxy configuration via custom bean:
+
+    @Bean
+    public HttpClient httpClient() {
+        return HttpClient.create()
+            .secure()
+            .proxy(proxyOptions -> proxyOptions
+                .type(ProxyProvider.Proxy.HTTP)
+                .host("https://proxy.example.com")
+                .port(8080));
+    }
+
+#### HTTPS
+Similar to proxy settings, HTTPS options can be configured with one of two methods:
+
+1. Use the standard JVM options (```-Djavax.net.ssl.trustStore```, ```-Djavax.net.ssl.trustStorePassword```, etc)
+2. Configure a custom ```reactor.netty.httpclient.HttpClient``` bean that includes the desired settings.
