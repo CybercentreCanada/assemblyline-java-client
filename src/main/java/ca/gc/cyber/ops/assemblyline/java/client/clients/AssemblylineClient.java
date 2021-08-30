@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -120,7 +120,7 @@ public class AssemblylineClient {
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
         this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.buildWebClient(assemblylineClientProperties, httpClient);
     }
