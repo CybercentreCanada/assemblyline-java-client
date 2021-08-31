@@ -51,6 +51,10 @@ public class Submission extends SubmissionBase {
      */
     List<String> results;
     /**
+     * The filescore key, used in deduplication. This is a non-unique key, that is shared by submissions that may be processed as duplicates.
+     */
+    String scanKey;
+    /**
      * Status of the submission
      */
     /* From a Java type-correctness perspective, it's nice to make this an enum, but it could cause
