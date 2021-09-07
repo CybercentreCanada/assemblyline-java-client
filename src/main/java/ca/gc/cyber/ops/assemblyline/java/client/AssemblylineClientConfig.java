@@ -15,7 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
 
 @Configuration
 @EnableConfigurationProperties(
@@ -25,6 +24,7 @@ public class AssemblylineClientConfig {
 
     @Bean
     @ConditionalOnProperty("assemblyline-java-client.url")
+    @ConditionalOnMissingBean
     public AssemblylineClient assemblylineClient(HttpClient httpClient, AssemblylineAuthenticationMethod authMethod,
                                                  ObjectMapper defaultMapper,
                                                  AssemblylineClientProperties assemblylineClientProperties) {
@@ -34,11 +34,13 @@ public class AssemblylineClientConfig {
 
     @Bean
     @ConditionalOnProperty(name = "assemblyline-java-client.auth-method", havingValue = "apikey")
+    @ConditionalOnMissingBean
     public AssemblylineAuthenticationMethod assemblylineClientApiAuth(ApikeyAuthProperties apikeyAuthProperties) {
         return new ApikeyAuthentication(apikeyAuthProperties);
     }
 
     @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "assemblyline-java-client.auth-method", havingValue = "password")
     public AssemblylineAuthenticationMethod assemblyLineClientPasswordAuth(PasswordAuthProperties passwordAuthProperties) {
         return new PasswordAuthentication(passwordAuthProperties);
