@@ -25,10 +25,10 @@ public class AssemblylineClientConfig {
     @Bean
     @ConditionalOnProperty("assemblyline-java-client.url")
     @ConditionalOnMissingBean
-    public AssemblylineClient assemblylineClient(HttpClient httpClient, AssemblylineAuthenticationMethod authMethod,
+    public AssemblylineClient assemblylineClient(HttpClient assemblylineHttpClient, AssemblylineAuthenticationMethod authMethod,
                                                  ObjectMapper defaultMapper,
                                                  AssemblylineClientProperties assemblylineClientProperties) {
-        return new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
+        return new AssemblylineClient(assemblylineClientProperties, assemblylineHttpClient, defaultMapper,
                 authMethod);
     }
 
@@ -53,7 +53,7 @@ public class AssemblylineClientConfig {
      */
     @Bean
     @ConditionalOnMissingBean
-    public HttpClient httpClient() {
+    public HttpClient assemblylineHttpClient() {
         return HttpClient.create().secure();
     }
 }
