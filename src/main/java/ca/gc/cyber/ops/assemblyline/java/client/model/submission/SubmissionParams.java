@@ -50,6 +50,10 @@ public class SubmissionParams {
      */
     String initialData;
     /**
+     * Is the file submitted known to be malicious?
+     */
+    boolean malicious;
+    /**
      * Max number of extracted files
      */
     int maxExtracted;

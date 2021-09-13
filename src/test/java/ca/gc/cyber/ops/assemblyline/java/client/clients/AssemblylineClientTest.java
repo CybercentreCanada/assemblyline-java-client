@@ -1,10 +1,9 @@
 package ca.gc.cyber.ops.assemblyline.java.client.clients;
 
+import ca.gc.cyber.ops.assemblyline.java.client.AssemblylineClientConfig;
 import ca.gc.cyber.ops.assemblyline.java.client.model.DownloadFileParams;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Data;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -15,12 +14,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +25,11 @@ import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.blockhound.BlockHound;
-import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
 
 import java.io.ByteArrayOutputStream;
@@ -41,22 +38,22 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@ExtendWith({SpringExtension.class})
+@SpringJUnitConfig(AssemblylineClientConfig.class)
 @AutoConfigureJson
 class AssemblylineClientTest {
 
     @Autowired
     ObjectMapper defaultMapper;
 
+    @Autowired
+    HttpClient httpClient;
+
     private MockWebServer mockBackEnd;
     private AssemblylineClientProperties assemblylineClientProperties = new AssemblylineClientProperties();
-    private ProxyProperties proxyProperties = new ProxyProperties();
     private AssemblylineClient assemblylineClient;
-    private ObjectMapper objectMapper;
     private String session = "testSession";
 
     static {
@@ -71,23 +68,20 @@ class AssemblylineClientTest {
     }
 
     @BeforeEach
-    private void initialize() throws IOException {
+    void initialize() throws IOException {
         // Create a new server for every test to make sure that state doesn't leak between different tests.
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
 
         this.assemblylineClientProperties.setUrl(String.format("http://localhost:%s",
                 mockBackEnd.getPort()));
-        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, proxyProperties, defaultMapper,
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
                 new AssemblylineAuthenticationTestImpl());
-        objectMapper = defaultMapper.copy();
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
     }
 
     @AfterEach
-    private void cleanUp() throws IOException {
+    void cleanUp() throws IOException {
         mockBackEnd.shutdown();
     }
 
@@ -111,7 +105,8 @@ class AssemblylineClientTest {
      * @param expectedResults Expected results
      * @param <T>             The type of data returned by the AssemblylineClient method
      */
-    public <T> void verifyHttpGet(Publisher<T> actualResult, String expectedPath, T... expectedResults) {
+    @SafeVarargs
+    public final <T> void verifyHttpGet(Publisher<T> actualResult, String expectedPath, T... expectedResults) {
         StepVerifier.Step<T> step = StepVerifier.create(actualResult);
         for (T er : expectedResults) {
             step = step.expectNext(er);
@@ -607,29 +602,6 @@ class AssemblylineClientTest {
 
         verifyHttpGet(this.assemblylineClient.getIngestMessageList("test_java_client"),
                 "/api/v4/ingest/get_message_list/test_java_client/", MockResponseModels.getIngestMessageList());
-    }
-
-    @Test
-    void testConstructorNullProxyPort() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        Exception e = assertThrows(IllegalArgumentException.class,
-                () -> new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                        new AssemblylineAuthenticationTestImpl()));
-        assertEquals("Proxy port must be set if proxy host is set.", e.getMessage());
-    }
-
-    @Test
-    void testConstructorWithValidProxyHostAndPort() {
-
-        ProxyProperties invalidProxyProps = new ProxyProperties();
-        invalidProxyProps.setHost("abc");
-        invalidProxyProps.setPort(1234);
-        new AssemblylineClient(assemblylineClientProperties, invalidProxyProps, defaultMapper,
-                new AssemblylineAuthenticationTestImpl());
-
-        // Should not throw any exception
     }
 
     @Data
