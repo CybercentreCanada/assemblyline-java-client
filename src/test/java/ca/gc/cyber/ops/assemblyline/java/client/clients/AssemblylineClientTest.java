@@ -342,14 +342,15 @@ class AssemblylineClientTest {
                 .verify();
     }
 
-
     @Test
     void testIsSubmissionJsonError() {
+        String someException = "someException";
         mockBackEnd.enqueue(
                 new MockResponse()
-                        .setBody("testErrorNotJson").setResponseCode(500));
+                        .setBody(someException).setResponseCode(500));
         StepVerifier.create(this.assemblylineClient.isSubmissionComplete("test"))
-                .expectErrorMatches(e -> e instanceof JsonParseException)
+                .expectErrorMatches(e -> e instanceof WebClientResponseException.InternalServerError &&
+                        e.getMessage().contains(someException))
                 .verify();
     }
 

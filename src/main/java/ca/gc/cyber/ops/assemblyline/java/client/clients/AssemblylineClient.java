@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -120,7 +121,7 @@ public class AssemblylineClient {
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
         this.mapper = defaultMapper.copy();
         this.assemblylineAuthenticationMethod = assemblylineAuthenticationMethod;
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         this.buildWebClient(assemblylineClientProperties, httpClient);
     }
@@ -413,12 +414,16 @@ public class AssemblylineClient {
         return Mono.just(rc);
     }
 
-    private String extractApiErrorMessage(WebClientResponseException exception) throws JsonProcessingException {
+    private String extractApiErrorMessage(WebClientResponseException exception) {
+        try {
         /* We're just reading the error message out of the response, so we don't really care about the type parameter.
         Sometimes it's an empty string, other times it's an empty object/map. */
-        AssemblylineApiResponse<Object> response = mapper.readValue(exception.getResponseBodyAsString(),
-                new TypeReference<>() {});
-        return response.getApiErrorMessage();
+            AssemblylineApiResponse<Object> response = mapper.readValue(exception.getResponseBodyAsString(),
+                    new TypeReference<>() {});
+            return response.getApiErrorMessage();
+        } catch (JsonProcessingException e) {
+            return exception.getResponseBodyAsString();
+        }
     }
 
     /**
