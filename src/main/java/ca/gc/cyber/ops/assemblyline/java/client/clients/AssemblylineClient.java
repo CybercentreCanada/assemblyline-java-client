@@ -415,15 +415,14 @@ public class AssemblylineClient {
     }
 
     private String extractApiErrorMessage(WebClientResponseException exception) {
-        var exceptionMessage = exception.getResponseBodyAsString();
         try {
         /* We're just reading the error message out of the response, so we don't really care about the type parameter.
         Sometimes it's an empty string, other times it's an empty object/map. */
-            AssemblylineApiResponse<Object> response = mapper.readValue(exceptionMessage,
+            AssemblylineApiResponse<Object> response = mapper.readValue(exception.getResponseBodyAsString(),
                     new TypeReference<>() {});
             return response.getApiErrorMessage();
         } catch (JsonProcessingException e) {
-            return exceptionMessage;
+            return exception.getResponseBodyAsString();
         }
     }
 
