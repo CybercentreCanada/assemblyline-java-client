@@ -71,31 +71,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Slf4j
-public class AssemblylineClient {
-
-    public static final String BASE_URL = "api/v4/";
-    public static final String LOGIN_URL = BASE_URL + "auth/login/";
-
-    public static final String FILE_DOWNLOAD_URL = BASE_URL + "file/download/{sha256}/";
-    public static final String FILE_INFO_URL = BASE_URL + "file/info/{sha256}/";
-    public static final String FILE_RESULTS_URL = BASE_URL + "file/result/{sha256}/";
-    public static final String FILE_RESULT_FOR_SERVICE_URL = FILE_RESULTS_URL + "{serviceName}/";
-
-    public static final String HASH_SEARCH = BASE_URL + "hash_search/{hash}/";
-    public static final String HASH_SEARCH_LIST_DATA_SOURCES = BASE_URL + "hash_search/list_data_sources/";
-
-    public static final String INGEST_URL = BASE_URL + "ingest/";
-    public static final String INGEST_GET_MESSAGE_LIST_URL = BASE_URL + "ingest/get_message_list/{notificationQueue}/";
-
-    public static final String RESULT_URL = BASE_URL + "result/{path:cache_key}/";
-
-    public static final String SUBMISSION_COMPLETE_URL = BASE_URL + "submission/is_completed/{sid}/";
-    public static final String SUBMISSION_URL = BASE_URL + "submission/{sid}/";
-    public static final String SUBMISSION_FILE_RESULTS_URL = SUBMISSION_URL + "file/{sha256}/";
-    public static final String SUBMISSION_FULL_URL = BASE_URL + "submission/full/{sid}/";
-    public static final String SUBMISSION_TREE_URL = BASE_URL + "submission/tree/{sid}/";
-
-    public static final String SUBMIT_URL = BASE_URL + "submit/";
+public class AssemblylineClient implements IAssemblylineClient {
 
     private static final String SESSION_COOKIE = "session";
     private static final String MULTIPART_MSG_JSON_PART = "json";
@@ -142,6 +118,7 @@ public class AssemblylineClient {
      * @param authBearerToken The authentication bearer token for the new client to use.
      * @return the new client.
      */
+    @Override
     public AssemblylineClient withAuthBearerToken(String authBearerToken) {
         AssemblylineClient newClient = new AssemblylineClient(this);
         newClient.authBearerToken = authBearerToken;
@@ -161,6 +138,7 @@ public class AssemblylineClient {
                 .build();
     }
 
+    @Override
     public Mono<LoginResponse> login() {
 
         return webClient.post().uri(LOGIN_URL)
@@ -171,51 +149,61 @@ public class AssemblylineClient {
                                 .doOnSuccess(lr -> this.setSession(cr)));
     }
 
+    @Override
     public Mono<Boolean> isSubmissionComplete(String sid) {
         return get(buildUri(SUBMISSION_COMPLETE_URL, sid), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<FileInfo> getFileInfo(String sha256) {
         return get(buildUri(FILE_INFO_URL, sha256), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<FileResults> getFileResults(String sha256) {
         return get(buildUri(FILE_RESULTS_URL, sha256), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<FileResultForService> getFileResultForService(String sha256, String serviceName) {
         return get(buildUri(FILE_RESULT_FOR_SERVICE_URL, sha256, serviceName), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<ResultBlock> getResult(String cacheKey) {
         return get(buildUri(RESULT_URL, cacheKey), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<SubmissionFileResults> getSubmissionFileResults(String sid, String sha256) {
         return get(buildUri(SUBMISSION_FILE_RESULTS_URL, sid, sha256), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<SubmissionTree> getSubmissionTree(String sid) {
         return get(buildUri(SUBMISSION_TREE_URL, sid), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<Submission> getSubmission(String sid) {
         return get(buildUri(SUBMISSION_URL, sid), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<SubmissionFull> getSubmissionFull(String sid) {
         return get(buildUri(SUBMISSION_FULL_URL, sid), new ParameterizedTypeReference<>() {
         });
     }
 
+    @Override
     public Mono<IngestResponse> ingestUrlOrSha256(NonBinaryIngest ingest) {
 
         return post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
@@ -224,6 +212,7 @@ public class AssemblylineClient {
 
     }
 
+    @Override
     public Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest) {
 
         return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
@@ -234,6 +223,7 @@ public class AssemblylineClient {
 
     }
 
+    @Override
     public Flux<IngestSubmissionResponse> getIngestMessageList(String notification) {
 
         return get(buildUri(INGEST_GET_MESSAGE_LIST_URL, notification),
@@ -243,6 +233,7 @@ public class AssemblylineClient {
 
     }
 
+    @Override
     public Mono<Submission> submitUrlOrSha256(NonBinarySubmit submit) {
 
         return post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
@@ -251,6 +242,7 @@ public class AssemblylineClient {
 
     }
 
+    @Override
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
 
         return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
@@ -286,10 +278,12 @@ public class AssemblylineClient {
                                 this.login().then()));
     }
 
+    @Override
     public InputStream downloadFile(String sha256) {
         return downloadFile(sha256, DownloadFileParams.builder().build());
     }
 
+    @Override
     public InputStream downloadFile(String sha256, DownloadFileParams params) {
         PipedOutputStream writablePipeEnd = new PipedOutputStream();
         /* We need an effectively-final variable for use in lambdas, so we need a temporary variable for use in a try
@@ -336,6 +330,7 @@ public class AssemblylineClient {
         return readablePipeEnd;
     }
 
+    @Override
     public Mono<List<String>> getHashSearchDataSources() {
         return get(buildUri(HASH_SEARCH_LIST_DATA_SOURCES), new ParameterizedTypeReference<>() {
         });
@@ -350,6 +345,7 @@ public class AssemblylineClient {
      * @return Search results
      * @see AssemblylineClient#hashSearch(String)
      */
+    @Override
     public Mono<Map<String, HashSearchResult>> hashSearch(String fileHash, List<String> dataSources,
                                                           Integer maxTimeout) {
         // We're using a LinkedHashMap to preserve ordering, which makes testing easier.
@@ -371,6 +367,7 @@ public class AssemblylineClient {
      * @return Search results
      * @see AssemblylineClient#hashSearch(String, List, Integer)
      */
+    @Override
     public Mono<Map<String, HashSearchResult>> hashSearch(String fileHash) {
         return hashSearch(fileHash, null, null);
     }
