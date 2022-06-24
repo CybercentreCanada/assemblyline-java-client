@@ -472,6 +472,21 @@ class AssemblylineClientTest {
     }
 
     @Test
+    void testLargeResponse_largeClientBuffer() {
+        // Increase the maximum buffer size to allow client to handle large responses.
+        assemblylineClientProperties.setMaxInMemorySize(2 * 1024 * 1024);
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
+                new AssemblylineAuthenticationTestImpl());
+
+        // The large response is over 1MB.
+        mockResponse(MockResponseModels.getSubmissionFullLargeJson());
+
+        verifyHttpGet(this.assemblylineClient.getSubmissionFull("3p9RPMzkoYJ1p4vfdZj6B0"),
+                "/api/v4/submission/full/3p9RPMzkoYJ1p4vfdZj6B0/",
+                MockResponseModels.getSubmissionFullLarge());
+    }
+
+    @Test
     void testSubmit() {
         mockResponse(MockResponseModels.getSubmissionJson());
 

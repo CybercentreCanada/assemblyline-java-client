@@ -27,8 +27,7 @@ public final class MockResponseModels {
     private MockResponseModels() {
     }
 
-
-    private static String readTestJson(String jsonName) {
+    private static String readFileIntoString(String jsonName) {
         String fullName = "/MockResponseModels/" + jsonName;
         try (InputStream inputStream = MockResponseModels.class.getResourceAsStream(fullName);
              ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
@@ -46,7 +45,7 @@ public final class MockResponseModels {
     }
 
     public static String getLoginResponseJson() {
-        return readTestJson("login_response.json");
+        return readFileIntoString("login_response.json");
     }
 
     public static LoginResponse getLoginResponse() {
@@ -94,7 +93,7 @@ public final class MockResponseModels {
         getFileInfo(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("file_info.json");
+        return readFileIntoString("file_info.json");
     }
 
     public static FileResults getFileResults() {
@@ -680,7 +679,7 @@ public final class MockResponseModels {
         getFileResults(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("file_results.json");
+        return readFileIntoString("file_results.json");
     }
 
     public static FileResultForService getFileResultForService() {
@@ -699,7 +698,7 @@ public final class MockResponseModels {
         getFileResultForService(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("file_result_service.json");
+        return readFileIntoString("file_result_service.json");
     }
 
     public static ResultBlock getResultBlock() {
@@ -715,7 +714,7 @@ public final class MockResponseModels {
         getResultBlock(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("result.json");
+        return readFileIntoString("result.json");
     }
 
     public static SubmissionFileResults getSubmissionFileResults() {
@@ -754,7 +753,7 @@ public final class MockResponseModels {
         getSubmissionFileResults(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("submission_file.json");
+        return readFileIntoString("submission_file.json");
     }
 
     public static SubmissionTree getSubmissionTree() {
@@ -792,7 +791,7 @@ public final class MockResponseModels {
         getSubmissionTree(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("submission_tree.json");
+        return readFileIntoString("submission_tree.json");
     }
 
     public static Submission getSubmission() {
@@ -891,7 +890,7 @@ public final class MockResponseModels {
         getSubmission(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("submission.json");
+        return readFileIntoString("submission.json");
     }
 
     public static SubmissionFull getSubmissionFull() {
@@ -1058,11 +1057,179 @@ public final class MockResponseModels {
         getSubmissionFull(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("submission_full.json");
+        return readFileIntoString("submission_full.json");
+    }
+
+    public static SubmissionFull getSubmissionFullLarge() {
+        /* The object returned by this method must be equivalent to a deserialized copy of the JSON returned by
+        getSubmissionFullJson(). However, it should not literally return a deserialized copy of the JSON. The result of this
+        method is supposed to be the expected result of deserializing the JSON here would result in tautological tests
+        that amount to assertEquals(json.deserialize(), json.deserialize()).*/
+        return SubmissionFull.builder()
+                .archiveTs(ZonedDateTime
+                        .of(2021, 2, 24,
+                                18, 15, 12, 257136000,
+                                ZoneOffset.UTC)
+                        .toInstant())
+                .classification(TLP_WHITE)
+                .errorCount(0)
+                .errors(Map.of())
+                .fileCount(2)
+                .fileInfos(Map.of(
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7", getFileInfo(),
+                        "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36", FileInfo.builder()
+                                .archiveTs(ZonedDateTime
+                                        .of(2021, 2, 24,
+                                                18, 15, 12, 223811000,
+                                                ZoneOffset.UTC)
+                                        .toInstant())
+                                .ascii("PK.........ESRV.*.............al_test.txtHello!PK..?........ESRV")
+                                .classification(TLP_WHITE)
+                                .entropy(4.245672537577632)
+                                .hex("504b03040a0300000000bc45535256cc2a9d06000000060000000b000000616c5f746573742e74787448656c6c6f21504b01023f030a0300000000bc45535256")
+                                // This value is over 1MB, so it's a bit cleaner to just store it in a separate file.
+                                .magic(readFileIntoString("large_json_value.txt").trim())
+                                .md5("012858aaf7c7e26dc010d30508df84ff")
+                                .mime("application/zip")
+                                .seen(FileInfo.Seen.builder()
+                                        .count(1)
+                                        .first(ZonedDateTime
+                                                .of(2021, 2, 19,
+                                                        18, 15, 12, 223832000,
+                                                        ZoneOffset.UTC)
+                                                .toInstant())
+                                        .last(ZonedDateTime
+                                                .of(2021, 2, 19,
+                                                        18, 15, 12, 223832000,
+                                                        ZoneOffset.UTC)
+                                                .toInstant())
+                                        .build())
+                                .sha1("ca5c15bd3d88a7206ba4a1edfe1b42c47e1ff9b7")
+                                .sha256("49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36")
+                                .size(162)
+                                .ssdeep("3:vh+5Fqllb8+QdwJKEkMvS/lpFqllbQBemQd5llmnTeagj39TeNt+lBlu/:5geW+QdwhgeCEmQdyiaAeP+lC/")
+                                .type("archive/zip")
+                                .build()
+                ))
+                .fileTree(getSubmissionTree().getTree())
+                .files(List.of(SubmissionBase.File.builder()
+                        .name("al_test.zip")
+                        .sha256("49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36")
+                        .size(162)
+                        .build()))
+                .maxScore(0)
+                .metadata(Map.of())
+                .missingErrorKeys(List.of())
+                .missingFileKeys(List.of())
+                .missingResultKeys(List.of())
+                .params(getSubmissionParams())
+                .results(Map.of(
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaPeek.v4_0_0_stable4.cDyOMFE1phHM.e",
+                        getMetaPeekResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.ConfigExtractor.v4_0_1_stable15.cDyOMFE1phHM.e",
+                        getConfigExtractorResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.FrankenStrings.v4_0_0_stable3.cDyOMFE1phHM.e",
+                        getFrankenStringsResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.TagCheck.v4_0_0_stable9.c5Mx9otMNWwr.e",
+                        getTagCheckResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Characterize.v4_0_0_stable5.cDyOMFE1phHM",
+                        getCharacterizeResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.Codevector.v4_0_0_stable6.cDyOMFE1phHM.e",
+                        getCodeVectorResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.VirusTotalCache.v4_0_1_stable7.c1waIr4vQjB5",
+                        getVirusTotalCacheResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.YARA.v4_0_0_stable9.c5Mx9otMNWwr.e",
+                        getYaraResultBlock(),
+                        "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7.MetaDefender.v4_0_0_stable5.cB4MCKLVFawL.e",
+                        getMetaDefenderResultBlock(),
+                        "49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36.Extract.v4_0_0_stable9.c2i2PqguInqd",
+                        ResultBlock.builder()
+                                .archiveTs(ZonedDateTime.
+                                        of(2021, 2, 24,
+                                                18, 15, 12, 666435000,
+                                                ZoneOffset.UTC)
+                                        .toInstant())
+                                .classification(TLP_WHITE)
+                                .created(ZonedDateTime.
+                                        of(2021, 2, 19,
+                                                18, 15, 12, 666411000,
+                                                ZoneOffset.UTC)
+                                        .toInstant())
+                                .dropFile(true)
+                                .response(ResultBlock.Response.builder()
+                                        .extracted(List.of(ResultBlock.Response.File.builder()
+                                                .classification(TLP_WHITE)
+                                                .description("zip")
+                                                .name("al_test.txt")
+                                                .sha256("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7")
+                                                .build()))
+                                        .milestones(ResultBlock.Response.Milestones.builder()
+                                                .serviceCompleted(ZonedDateTime.
+                                                        of(2021, 2, 19,
+                                                                18, 15, 12, 598722000,
+                                                                ZoneOffset.UTC)
+                                                        .toInstant())
+                                                .serviceStarted(ZonedDateTime.
+                                                        of(2021, 2, 19,
+                                                                18, 15, 12, 589947000,
+                                                                ZoneOffset.UTC)
+                                                        .toInstant())
+                                                .build())
+                                        .serviceName("Extract")
+                                        .serviceVersion("4.0.0.stable9")
+                                        .supplementary(List.of())
+                                        .build())
+                                .result(ResultBlock.Result.builder()
+                                        .score(0)
+                                        .sections(List.of(ResultBlock.Result.Section.builder()
+                                                .bodyFormat(ResultBlock.Result.Section.BodyFormat.TEXT)
+                                                .classification(TLP_WHITE)
+                                                .depth(0)
+                                                .heuristic(ResultBlock.Result.Section.Heuristic.builder()
+                                                        .attack(List.of())
+                                                        .heurId("EXTRACT.1")
+                                                        .name("Extracted from archive")
+                                                        .score(0)
+                                                        .signature(List.of())
+                                                        .build())
+                                                .tags(List.of())
+                                                .titleText("Successfully extracted 1 files")
+                                                .build()))
+                                        .build())
+                                .sha256("49a41506349514a98c6cbb040224a8c91ed40b2cd11af570ec672df6b1d7bd36")
+                                .build()
+                ))
+                .sid("3p9RPMzkoYJ1p4vfdZj6B0")
+                .state("completed")
+                .times(Submission.Times.builder()
+                        .completed(ZonedDateTime
+                                .of(2021, 2, 19,
+                                        18, 15, 15, 129742000,
+                                        ZoneOffset.UTC)
+                                .toInstant())
+                        .submitted(ZonedDateTime
+                                .of(2021, 2, 19,
+                                        18, 15, 12, 257298000,
+                                        ZoneOffset.UTC)
+                                .toInstant())
+                        .build())
+                .verdict(Submission.Verdict.builder()
+                        .malicious(List.of())
+                        .nonMalicious(List.of("username"))
+                        .build())
+                .build();
+    }
+
+    public static String getSubmissionFullLargeJson() {
+        /* The object returned by this method must be equivalent to a serialized copy of the object returned by
+        getSubmissionFullLarge(). However, it should not literally return a serialized copy of the object. The result of this
+        method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
+        deserialization we are testing.*/
+        return readFileIntoString("submission_full_large.json");
     }
 
     public static String getIngestResponseJson() {
-        return readTestJson("ingest_response.json");
+        return readFileIntoString("ingest_response.json");
     }
 
     public static IngestResponse getIngestResponse() {
@@ -1070,7 +1237,7 @@ public final class MockResponseModels {
     }
 
     public static String getIsSubmissionCompleteResponseJson() {
-        return readTestJson("is_submission_complete.json");
+        return readFileIntoString("is_submission_complete.json");
     }
     public static boolean getIsSubmissionCompleteResponse() {
         return true;
@@ -1127,7 +1294,7 @@ public final class MockResponseModels {
         getIngestMessageList(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("ingest_get_message_list.json");
+        return readFileIntoString("ingest_get_message_list.json");
     }
 
     public static Buffer getDownloadFileBuffer() {
@@ -1190,7 +1357,7 @@ public final class MockResponseModels {
         getHashSearchDataSources(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("hash_search_list_data_sources.json");
+        return readFileIntoString("hash_search_list_data_sources.json");
     }
 
     public static Map<String, HashSearchResult> getHashSearch() {
@@ -1213,7 +1380,7 @@ public final class MockResponseModels {
         getHashSearch(). However, it should not literally return a serialized copy of the object. The result of this
         method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
         deserialization we are testing.*/
-        return readTestJson("hash_search.json");
+        return readFileIntoString("hash_search.json");
     }
 
     public static String getInternalErrorJson() {
@@ -1221,7 +1388,7 @@ public final class MockResponseModels {
         Assemblyline returns an internal error. However, it should not literally return a serialized copy of the object.
         The result of this method is supposed to represent real output from Assemblyline that will be input for a
         deserializer whose deserialization we are testing.*/
-        return readTestJson("internal_error.json");
+        return readFileIntoString("internal_error.json");
     }
 
     public static String getBadRequestJson() {
@@ -1229,7 +1396,7 @@ public final class MockResponseModels {
         Assemblyline returns an 400 error. However, it should not literally return a serialized copy of the object.
         The result of this method is supposed to represent real output from Assemblyline that will be input for a
         deserializer whose deserialization we are testing.*/
-        return readTestJson("bad_request.json");
+        return readFileIntoString("bad_request.json");
     }
 
     public static String notLoggedInJson() {
@@ -1237,7 +1404,7 @@ public final class MockResponseModels {
         Assemblyline returns an 401 error for a user that has not logged in yet. However, it should not literally
         return a serialized copy of the object. The result of this method is supposed to represent real output from
         Assemblyline that will be input for a deserializer whose deserialization we are testing.*/
-        return readTestJson("not_logged_in.json");
+        return readFileIntoString("not_logged_in.json");
     }
 
     public static String invalidApiKeyJson() {
@@ -1245,7 +1412,7 @@ public final class MockResponseModels {
         Assemblyline returns an 401 error for an invalid API key. However, it should not literally return a serialized
         copy of the object. The result of this method is supposed to represent real output from Assemblyline that will
         be input for a deserializer whose deserialization we are testing.*/
-        return readTestJson("invalid_apikey.json");
+        return readFileIntoString("invalid_apikey.json");
     }
 
 }
