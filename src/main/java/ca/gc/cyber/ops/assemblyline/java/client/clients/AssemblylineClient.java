@@ -130,7 +130,10 @@ public class AssemblylineClient implements IAssemblylineClient {
         webClient = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .codecs(clientCodecConfigurer -> {
-                    clientCodecConfigurer.defaultCodecs().maxInMemorySize(assemblylineClientProperties.getMaxInMemorySize());
+                    // toIntExact() will throw an error if the property is more than 2GB (Integer.MAX_VALUE bytes)
+                    clientCodecConfigurer.defaultCodecs().maxInMemorySize(Math.toIntExact(
+                            assemblylineClientProperties.getMaxInMemorySize().toBytes()));
+
                     clientCodecConfigurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(mapper));
                     clientCodecConfigurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(mapper));
                 })

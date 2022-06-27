@@ -26,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
@@ -474,7 +475,7 @@ class AssemblylineClientTest {
     @Test
     void testLargeResponse_largeClientBuffer() {
         // Increase the maximum buffer size to allow client to handle large responses.
-        assemblylineClientProperties.setMaxInMemorySize(2 * 1024 * 1024);
+        assemblylineClientProperties.setMaxInMemorySize(DataSize.ofMegabytes(2));
         assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
                 new AssemblylineAuthenticationTestImpl());
 
