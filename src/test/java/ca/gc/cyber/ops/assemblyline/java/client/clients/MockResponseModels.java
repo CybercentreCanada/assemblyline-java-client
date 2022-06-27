@@ -1062,9 +1062,9 @@ public final class MockResponseModels {
 
     public static SubmissionFull getSubmissionFullLarge() {
         /* The object returned by this method must be equivalent to a deserialized copy of the JSON returned by
-        getSubmissionFullJson(). However, it should not literally return a deserialized copy of the JSON. The result of this
-        method is supposed to be the expected result of deserializing the JSON here would result in tautological tests
-        that amount to assertEquals(json.deserialize(), json.deserialize()).*/
+        getSubmissionFullLargeJson(). However, it should not literally return a deserialized copy of the JSON. The
+        result of this method is supposed to be the expected result of deserializing the JSON here would result in
+        tautological tests that amount to assertEquals(json.deserialize(), json.deserialize()).*/
         return SubmissionFull.builder()
                 .archiveTs(ZonedDateTime
                         .of(2021, 2, 24,
@@ -1222,9 +1222,9 @@ public final class MockResponseModels {
 
     public static String getSubmissionFullLargeJson() {
         /* The object returned by this method must be equivalent to a serialized copy of the object returned by
-        getSubmissionFullLarge(). However, it should not literally return a serialized copy of the object. The result of this
-        method is supposed to represent real output from Assemblyline that will be input for a deserializer whose
-        deserialization we are testing.*/
+        getSubmissionFullLarge(). However, it should not literally return a serialized copy of the object. The result
+        of this method is supposed to represent real output from Assemblyline that will be input for a deserializer
+        whose deserialization we are testing.*/
         return readFileIntoString("submission_full_large.json");
     }
 
