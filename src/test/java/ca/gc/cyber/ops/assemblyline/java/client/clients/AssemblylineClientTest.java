@@ -26,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
@@ -469,6 +470,21 @@ class AssemblylineClientTest {
         verifyHttpGet(this.assemblylineClient.getSubmissionFull("3p9RPMzkoYJ1p4vfdZj6B0"),
                 "/api/v4/submission/full/3p9RPMzkoYJ1p4vfdZj6B0/",
                 MockResponseModels.getSubmissionFull());
+    }
+
+    @Test
+    void testLargeResponse_largeClientBuffer() {
+        // Increase the maximum buffer size to allow client to handle large responses.
+        assemblylineClientProperties.setMaxInMemorySize(DataSize.ofMegabytes(2));
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
+                new AssemblylineAuthenticationTestImpl());
+
+        // The large response is over 1MB.
+        mockResponse(MockResponseModels.getSubmissionFullLargeJson());
+
+        verifyHttpGet(this.assemblylineClient.getSubmissionFull("3p9RPMzkoYJ1p4vfdZj6B0"),
+                "/api/v4/submission/full/3p9RPMzkoYJ1p4vfdZj6B0/",
+                MockResponseModels.getSubmissionFullLarge());
     }
 
     @Test
