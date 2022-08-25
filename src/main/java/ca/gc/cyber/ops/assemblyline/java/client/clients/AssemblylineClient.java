@@ -548,7 +548,7 @@ public class AssemblylineClient implements IAssemblylineClient {
      *                       {@code new ParameterizedTypeReference<ALApiResponse<T>>} (where {@code T} is a type
      *                       parameter on a method) is not OK.
      * @param <T>            The type of data that will be in the response.
-     * @return Mono<T>
+     * @return Mono of clientResponse body
      */
     protected <T> Mono<T> clientResponseToMono(ClientResponse clientResponse,
                                                ParameterizedTypeReference<AssemblylineApiResponse<T>> type) {

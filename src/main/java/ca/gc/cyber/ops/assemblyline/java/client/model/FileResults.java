@@ -83,7 +83,7 @@ public class FileResults {
         /**
          * The heuristic instances are stored as arrays in the JSON instead of objects, so we need special deserialization.
          *
-         * @param map
+         * @param map   Map of heuristics
          * @return The builder.
          */
         @JsonProperty("heuristics")
@@ -103,7 +103,7 @@ public class FileResults {
         /**
          * The attack instances are stored as arrays in the JSON instead of objects, so we need special deserialization.
          *
-         * @param map
+         * @param map   Map of attack instances
          * @return The builder.
          */
         @JsonProperty("attack_matrix")
@@ -123,7 +123,7 @@ public class FileResults {
         /**
          * The tag instances are stored as arrays in the JSON instead of objects, so we need special deserialization.
          *
-         * @param map
+         * @param map   Map of tag instances
          * @return The builder.
          */
         @JsonProperty("tags")
