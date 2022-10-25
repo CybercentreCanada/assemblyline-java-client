@@ -121,5 +121,9 @@ public class SubmissionParams {
          * List of selected services
          */
         List<String> selected;
+        /**
+         * List of rescan services
+         */
+        List<String> rescan;
     }
 }
