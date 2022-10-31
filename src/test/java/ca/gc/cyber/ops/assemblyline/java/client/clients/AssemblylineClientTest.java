@@ -446,6 +446,17 @@ class AssemblylineClientTest {
     }
 
     @Test
+    void testIngestAsyncBinaryFile() {
+
+        mockResponse(MockResponseModels.getIngestResponseJson());
+
+        this.verifyHttpPostJsonMultiformData(this.assemblylineClient.ingestAsyncBinary(RequestModels.getAsyncBinaryIngestObject()),
+                MockResponseModels.getIngestResponse(), "/api/v4/ingest/",
+                RequestModels.getBinaryIngestBaseJson(),
+                RequestModels.getBinaryData());
+    }
+
+    @Test
     void testGetSubmissionTree() {
         mockResponse(MockResponseModels.getSubmissionTreeJson());
 

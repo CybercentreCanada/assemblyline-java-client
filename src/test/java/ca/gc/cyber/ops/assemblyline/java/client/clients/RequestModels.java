@@ -1,5 +1,6 @@
 package ca.gc.cyber.ops.assemblyline.java.client.clients;
 
+import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.AsyncBinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.Sha256Ingest;
@@ -9,10 +10,12 @@ import ca.gc.cyber.ops.assemblyline.java.client.model.submit.SubmitMetadata;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.UrlSubmit;
 import lombok.experimental.UtilityClass;
 import org.junit.jupiter.api.Assertions;
+import reactor.core.publisher.Flux;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -65,6 +68,21 @@ public class RequestModels {
         return BinaryFile.<IngestBase>builder()
                 .filename("fileName")
                 .file(new byte[]{1, 2, 3})
+                .metadata(IngestBase.builder()
+                        .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
+                        .params(Map.of("param1", "value1"))
+                        .name("meta data")
+                        .generateAlert(true)
+                        .notificationQueue("notificationQueue")
+                        .notificationThreshold(100)
+                        .build())
+                .build();
+    }
+
+    public AsyncBinaryFile<IngestBase> getAsyncBinaryIngestObject() {
+        return AsyncBinaryFile.<IngestBase>builder()
+                .filename("fileName")
+                .file(Flux.just(ByteBuffer.wrap(new byte[]{1, 2, 3})))
                 .metadata(IngestBase.builder()
                         .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                         .params(Map.of("param1", "value1"))

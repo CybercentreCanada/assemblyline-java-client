@@ -9,6 +9,7 @@ import ca.gc.cyber.ops.assemblyline.java.client.model.HashSearchResult;
 import ca.gc.cyber.ops.assemblyline.java.client.model.IngestResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.LoginResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ResultBlock;
+import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.AsyncBinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.NonBinaryIngest;
@@ -25,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -62,6 +62,7 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -228,6 +229,15 @@ public class AssemblylineClient implements IAssemblylineClient {
     }
 
     @Override
+    public Mono<IngestResponse> ingestAsyncBinary(AsyncBinaryFile<IngestBase> asyncBinaryIngest) {
+        return Mono.fromCallable(() -> this.multipartInserterFromAsyncBinaryIngest(asyncBinaryIngest))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
+                        },
+                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+    }
+
+    @Override
     public Flux<IngestSubmissionResponse> getIngestMessageList(String notification) {
 
         return get(buildUri(INGEST_GET_MESSAGE_LIST_URL, notification),
@@ -250,6 +260,16 @@ public class AssemblylineClient implements IAssemblylineClient {
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
 
         return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
+                        },
+                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+    }
+
+    @Override
+    public Mono<Submission> submitAsyncBinary(AsyncBinaryFile<SubmitMetadata> binaryIngest) {
+
+        return Mono.fromCallable(() -> this.multipartInserterFromAsyncBinaryIngest(binaryIngest))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
                         },
@@ -526,6 +546,13 @@ public class AssemblylineClient implements IAssemblylineClient {
         ByteArrayResource bar = new ByteArrayResource(binaryFile.getFile());
         MultipartBodyBuilder mbb = new MultipartBodyBuilder();
         mbb.part(MULTIPART_MSG_BINARY_PART, bar).filename(binaryFile.getFilename());
+        mbb.part(MULTIPART_MSG_JSON_PART, mapper.writeValueAsString(binaryFile.getMetadata()));
+        return BodyInserters.fromMultipartData(mbb.build());
+    }
+
+    private BodyInserters.MultipartInserter multipartInserterFromAsyncBinaryIngest(AsyncBinaryFile<?> binaryFile) throws JsonProcessingException {
+        MultipartBodyBuilder mbb = new MultipartBodyBuilder();
+        mbb.asyncPart(MULTIPART_MSG_BINARY_PART, binaryFile.getFile(), ByteBuffer.class).filename(binaryFile.getFilename()).contentType(MediaType.APPLICATION_OCTET_STREAM);
         mbb.part(MULTIPART_MSG_JSON_PART, mapper.writeValueAsString(binaryFile.getMetadata()));
         return BodyInserters.fromMultipartData(mbb.build());
     }
