@@ -68,6 +68,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -219,22 +220,22 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     @Override
     public Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest) {
-
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
-                        },
-                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+        return ingestBinary(() -> this.multipartInserterFromBinaryIngest(binaryIngest));
 
     }
 
     @Override
     public Mono<IngestResponse> ingestAsyncBinary(AsyncBinaryFile<IngestBase> asyncBinaryIngest) {
-        return Mono.fromCallable(() -> this.multipartInserterFromAsyncBinaryIngest(asyncBinaryIngest))
+        return ingestBinary(() -> this.multipartInserterFromAsyncBinaryIngest(asyncBinaryIngest));
+    }
+
+    private Mono<IngestResponse> ingestBinary(Callable<BodyInserters.MultipartInserter> bodyInserter) {
+        return Mono.fromCallable(bodyInserter)
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
                         },
                         multipartInserter, MediaType.MULTIPART_FORM_DATA));
+
     }
 
     @Override
@@ -258,18 +259,16 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     @Override
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
-
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
-                        },
-                        multipartInserter, MediaType.MULTIPART_FORM_DATA));
+        return submitBinary(() -> this.multipartInserterFromBinaryIngest(binaryIngest));
     }
 
     @Override
     public Mono<Submission> submitAsyncBinary(AsyncBinaryFile<SubmitMetadata> binaryIngest) {
+        return submitBinary(() -> this.multipartInserterFromAsyncBinaryIngest(binaryIngest));
+    }
 
-        return Mono.fromCallable(() -> this.multipartInserterFromAsyncBinaryIngest(binaryIngest))
+    private Mono<Submission> submitBinary(Callable<BodyInserters.MultipartInserter> bodyInserter) {
+        return Mono.fromCallable(bodyInserter)
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
                         },
@@ -552,7 +551,9 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     private BodyInserters.MultipartInserter multipartInserterFromAsyncBinaryIngest(AsyncBinaryFile<?> binaryFile) throws JsonProcessingException {
         MultipartBodyBuilder mbb = new MultipartBodyBuilder();
-        mbb.asyncPart(MULTIPART_MSG_BINARY_PART, binaryFile.getFile(), ByteBuffer.class).filename(binaryFile.getFilename()).contentType(MediaType.APPLICATION_OCTET_STREAM);
+        mbb.asyncPart(MULTIPART_MSG_BINARY_PART, binaryFile.getFile(), ByteBuffer.class)
+                .filename(binaryFile.getFilename())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM);
         mbb.part(MULTIPART_MSG_JSON_PART, mapper.writeValueAsString(binaryFile.getMetadata()));
         return BodyInserters.fromMultipartData(mbb.build());
     }
