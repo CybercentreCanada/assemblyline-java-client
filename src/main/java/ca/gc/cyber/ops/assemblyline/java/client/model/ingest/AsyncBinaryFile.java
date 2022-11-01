@@ -3,7 +3,7 @@ package ca.gc.cyber.ops.assemblyline.java.client.model.ingest;
 import ca.gc.cyber.ops.assemblyline.java.client.model.submit.SubmitBase;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
-import reactor.core.publisher.Flux;
+import org.reactivestreams.Publisher;
 
 import java.nio.ByteBuffer;
 
@@ -22,7 +22,7 @@ public class AsyncBinaryFile<T extends SubmitBase> {
      */
     String filename;
     /**
-     * Flux of Binary File Data
+     * Publisher of Binary File Data
      */
-    Flux<ByteBuffer> file;
+    Publisher<ByteBuffer> file;
 }
