@@ -8,6 +8,7 @@ import ca.gc.cyber.ops.assemblyline.java.client.model.HashSearchResult;
 import ca.gc.cyber.ops.assemblyline.java.client.model.IngestResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.LoginResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ResultBlock;
+import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.AsyncBinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.NonBinaryIngest;
@@ -70,11 +71,15 @@ public interface IAssemblylineClient {
 
     Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest);
 
+    Mono<IngestResponse> ingestAsyncBinary(AsyncBinaryFile<IngestBase> asyncBinaryIngest);
+
     Flux<IngestSubmissionResponse> getIngestMessageList(String notification);
 
     Mono<Submission> submitUrlOrSha256(NonBinarySubmit submit);
 
     Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest);
+
+    Mono<Submission> submitAsyncBinary(AsyncBinaryFile<SubmitMetadata> asyncBinaryIngest);
 
     InputStream downloadFile(String sha256);
 

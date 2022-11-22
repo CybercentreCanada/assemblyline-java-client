@@ -9,6 +9,7 @@ import ca.gc.cyber.ops.assemblyline.java.client.model.HashSearchResult;
 import ca.gc.cyber.ops.assemblyline.java.client.model.IngestResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.LoginResponse;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ResultBlock;
+import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.AsyncBinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.BinaryFile;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.IngestBase;
 import ca.gc.cyber.ops.assemblyline.java.client.model.ingest.NonBinaryIngest;
@@ -25,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -62,11 +62,13 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -218,8 +220,17 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     @Override
     public Mono<IngestResponse> ingestBinary(BinaryFile<IngestBase> binaryIngest) {
+        return ingestBinary(() -> this.multipartInserterFromBinaryIngest(binaryIngest));
 
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
+    }
+
+    @Override
+    public Mono<IngestResponse> ingestAsyncBinary(AsyncBinaryFile<IngestBase> asyncBinaryIngest) {
+        return ingestBinary(() -> this.multipartInserterFromAsyncBinaryIngest(asyncBinaryIngest));
+    }
+
+    private Mono<IngestResponse> ingestBinary(Callable<BodyInserters.MultipartInserter> bodyInserter) {
+        return Mono.fromCallable(bodyInserter)
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(INGEST_URL), new ParameterizedTypeReference<>() {
                         },
@@ -248,8 +259,16 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     @Override
     public Mono<Submission> submitBinary(BinaryFile<SubmitMetadata> binaryIngest) {
+        return submitBinary(() -> this.multipartInserterFromBinaryIngest(binaryIngest));
+    }
 
-        return Mono.fromCallable(() -> this.multipartInserterFromBinaryIngest(binaryIngest))
+    @Override
+    public Mono<Submission> submitAsyncBinary(AsyncBinaryFile<SubmitMetadata> binaryIngest) {
+        return submitBinary(() -> this.multipartInserterFromAsyncBinaryIngest(binaryIngest));
+    }
+
+    private Mono<Submission> submitBinary(Callable<BodyInserters.MultipartInserter> bodyInserter) {
+        return Mono.fromCallable(bodyInserter)
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(multipartInserter -> post(buildUri(SUBMIT_URL), new ParameterizedTypeReference<>() {
                         },
@@ -526,6 +545,15 @@ public class AssemblylineClient implements IAssemblylineClient {
         ByteArrayResource bar = new ByteArrayResource(binaryFile.getFile());
         MultipartBodyBuilder mbb = new MultipartBodyBuilder();
         mbb.part(MULTIPART_MSG_BINARY_PART, bar).filename(binaryFile.getFilename());
+        mbb.part(MULTIPART_MSG_JSON_PART, mapper.writeValueAsString(binaryFile.getMetadata()));
+        return BodyInserters.fromMultipartData(mbb.build());
+    }
+
+    private BodyInserters.MultipartInserter multipartInserterFromAsyncBinaryIngest(AsyncBinaryFile<?> binaryFile) throws JsonProcessingException {
+        MultipartBodyBuilder mbb = new MultipartBodyBuilder();
+        mbb.asyncPart(MULTIPART_MSG_BINARY_PART, binaryFile.getFile(), ByteBuffer.class)
+                .filename(binaryFile.getFilename())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM);
         mbb.part(MULTIPART_MSG_JSON_PART, mapper.writeValueAsString(binaryFile.getMetadata()));
         return BodyInserters.fromMultipartData(mbb.build());
     }
