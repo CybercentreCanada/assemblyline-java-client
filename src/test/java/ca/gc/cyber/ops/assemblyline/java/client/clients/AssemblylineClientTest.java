@@ -3,7 +3,9 @@ package ca.gc.cyber.ops.assemblyline.java.client.clients;
 import ca.gc.cyber.ops.assemblyline.java.client.AssemblylineClientConfig;
 import ca.gc.cyber.ops.assemblyline.java.client.model.DownloadFileParams;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.Data;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -643,5 +645,23 @@ class AssemblylineClientTest {
         }
     }
 
+    @Test
+    void testMisconfiguredDefaultMapper() {
+        // Construct a client with an ObjectMapper that has missing/unexpected settings.
+        ObjectMapper mapper = new ObjectMapper();
+        // The client needs SNAKE_CASE
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+        // The client should *not* fail on unknown properties, to be more accommodating of changes in AssemblyLine.
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
+        // The client constructor should be setting the required properties on the mapper inside the constructor.
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, mapper,
+                new AssemblylineAuthenticationTestImpl());
+
+        mockResponse(MockResponseModels.getFileInfoJson());
+
+        verifyHttpGet(this.assemblylineClient.getFileInfo("334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7"),
+                "/api/v4/file/info/334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7/",
+                MockResponseModels.getFileInfo());
+    }
 }
