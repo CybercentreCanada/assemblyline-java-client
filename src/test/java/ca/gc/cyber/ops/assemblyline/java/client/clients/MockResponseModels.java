@@ -55,6 +55,7 @@ public final class MockResponseModels {
         deserialization we are testing.*/
         return LoginResponse.builder()
                 .privileges(List.of(LoginResponse.Privleges.R, LoginResponse.Privleges.W))
+                .rolesLimit(List.of("submission_create", "submission_delete", "submission_manage"))
                 .sessionDuration(300)
                 .username("test")
                 .build();

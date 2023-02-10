@@ -23,6 +23,11 @@ public class LoginResponse {
     String username;
 
     /**
+     * Roles limit of signed in user
+     */
+    List<String> rolesLimit;
+
+    /**
      * User privileges from assemblyline-ui/blob/master/assemblyline_ui/api/v4/authentication.py
      */
     public enum Privleges {
