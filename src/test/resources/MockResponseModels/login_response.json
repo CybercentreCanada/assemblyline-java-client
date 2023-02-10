@@ -3,7 +3,12 @@
   "api_response": {
     "privileges" : ["R", "W"],
     "session_duration" : 300,
-    "username" : "test"
+    "username" : "test",
+    "roles_limit": [
+      "submission_create",
+      "submission_delete",
+      "submission_manage"
+    ]
   },
   "api_server_version": "4.0.0",
   "api_status_code": 200
