@@ -19,7 +19,8 @@
     "sha256": "334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7",
     "size": 6,
     "ssdeep": "3:at:at",
-    "type": "unknown"
+    "type": "unknown",
+    "a completely unexpected property": "To avoid breaking things, the client should ignore unknown properties in received JSON."
   },
   "api_server_version": "4.0.0",
   "api_status_code": 200
