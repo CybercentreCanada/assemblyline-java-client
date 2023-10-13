@@ -132,17 +132,17 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-gpg-plugin</artifactId>
-                            <version>3.0.1</version>
+                            <version>3.1.0</version>
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-source-plugin</artifactId>
-                            <version>3.2.1</version>
+                            <version>3.3.0</version>
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-javadoc-plugin</artifactId>
-                            <version>3.4.1</version>
+                            <version>3.6.0</version>
                         </plugin>
                     </plugins>
                 </pluginManagement>
@@ -201,5 +201,30 @@
             </build>
         </profile>
     </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <!-- 3.2.5 is the oldest version of Maven that supports the latest version of all of the plugins that we are using. -->
+                                    <version>3.2.5</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
