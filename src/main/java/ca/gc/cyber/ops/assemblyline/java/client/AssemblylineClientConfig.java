@@ -27,9 +27,8 @@ public class AssemblylineClientConfig {
     @ConditionalOnProperty("assemblyline-java-client.url")
     @ConditionalOnMissingBean
     public IAssemblylineClient assemblylineClient(HttpClient assemblylineHttpClient, AssemblylineAuthenticationMethod authMethod,
-                                                  ObjectMapper defaultMapper,
                                                   AssemblylineClientProperties assemblylineClientProperties) {
-        return new AssemblylineClient(assemblylineClientProperties, assemblylineHttpClient, defaultMapper,
+        return new AssemblylineClient(assemblylineClientProperties, assemblylineHttpClient,
                 authMethod);
     }
 

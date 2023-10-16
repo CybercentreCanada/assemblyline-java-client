@@ -78,7 +78,7 @@ class AssemblylineClientTest {
 
         this.assemblylineClientProperties.setUrl(String.format("http://localhost:%s",
                 mockBackEnd.getPort()));
-        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient,
                 new AssemblylineAuthenticationTestImpl());
 
     }
@@ -489,7 +489,7 @@ class AssemblylineClientTest {
     void testLargeResponse_largeClientBuffer() {
         // Increase the maximum buffer size to allow client to handle large responses.
         assemblylineClientProperties.setMaxInMemorySize(DataSize.ofMegabytes(2));
-        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient, defaultMapper,
+        assemblylineClient = new AssemblylineClient(assemblylineClientProperties, httpClient,
                 new AssemblylineAuthenticationTestImpl());
 
         // The large response is over 1MB.
@@ -646,6 +646,8 @@ class AssemblylineClientTest {
     }
 
     @Test
+    // This method is specifically testing the deprecated method that is marked for removal.
+    @SuppressWarnings("removal")
     void testMisconfiguredDefaultMapper() {
         // Construct a client with an ObjectMapper that has missing/unexpected settings.
         ObjectMapper mapper = new ObjectMapper();

@@ -96,6 +96,22 @@ public class AssemblylineClient implements IAssemblylineClient {
 
     private String authBearerToken;
 
+    /**
+     * Constructs a new instance of AssemblylineClient.
+     *
+     * @param assemblylineClientProperties     Properties to use when configuring the AssemblylineClient instance.
+     * @param httpClient                       The HTTP client to be used to communicate with AssemblyLine.
+     * @param defaultMapper                    A base {@link ObjectMapper} that will be copied and then configured for
+     *                                         use with AssemblyLine. This constructor is deprecated because of this
+     *                                         parameter; users of this constructor may inadvertently introduce a
+     *                                         misconfigured ObjectMapper.
+     * @param assemblylineAuthenticationMethod The authentication method to use when connecting to AssemblyLine.
+     * @deprecated Allowing external code to supply an ObjectMapper can cause issues if the provided mapper is
+     * configured in a way that is not compatible with the JSON produced/consumed by AssemblyLine. Use
+     * {@link AssemblylineClient#AssemblylineClient(AssemblylineClientProperties, HttpClient, AssemblylineAuthenticationMethod)}
+     * instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.11")
     public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
                               HttpClient httpClient, ObjectMapper defaultMapper,
                               AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
@@ -109,8 +125,25 @@ public class AssemblylineClient implements IAssemblylineClient {
     }
 
     /**
+     * Constructs a new instance of AssemblylineClient.
+     *
+     * @param assemblylineClientProperties     Properties to use when configuring the AssemblylineClient instance.
+     * @param httpClient                       The HTTP client to be used to communicate with AssemblyLine.
+     * @param assemblylineAuthenticationMethod The authentication method to use when connecting to AssemblyLine.
+     */
+    // This constructor currently delegates to the deprecated constructor.
+    @SuppressWarnings("deprecation")
+    public AssemblylineClient(AssemblylineClientProperties assemblylineClientProperties,
+                              HttpClient httpClient,
+                              AssemblylineAuthenticationMethod assemblylineAuthenticationMethod) {
+        // TODO #136 "Merge" this constructor with the deprecated one (removing the ObjectMapper parameter).
+        this(assemblylineClientProperties, httpClient, new ObjectMapper(), assemblylineAuthenticationMethod);
+    }
+
+    /**
      * Makes a copy of an AssemblylineClient that uses the same underlying {@link WebClient}. This is intended for use with methods like {@link #withAuthBearerToken} that set session-specific state.
      */
+    @SuppressWarnings("CopyConstructorMissesField")
     private AssemblylineClient(AssemblylineClient original) {
         this.mapper = original.mapper;
         this.assemblylineAuthenticationMethod = original.assemblylineAuthenticationMethod;
