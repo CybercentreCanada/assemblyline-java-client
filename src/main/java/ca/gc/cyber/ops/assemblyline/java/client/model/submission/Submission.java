@@ -14,7 +14,6 @@ import java.util.List;
  * Maps the response from /submission/{sid}
  */
 @Value
-@EqualsAndHashCode(callSuper = true)
 @Jacksonized
 @SuperBuilder
 public class Submission extends SubmissionBase {
