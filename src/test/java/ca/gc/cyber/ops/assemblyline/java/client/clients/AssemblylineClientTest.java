@@ -10,11 +10,11 @@ import lombok.Data;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileItemFactory;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +30,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.blockhound.BlockHound;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
@@ -58,17 +57,6 @@ class AssemblylineClientTest {
     private AssemblylineClientProperties assemblylineClientProperties = new AssemblylineClientProperties();
     private AssemblylineClient assemblylineClient;
     private String session = "testSession";
-
-    static {
-        /*
-         * Blockhound throws exception when NativePRNG.engineNextBytes is called; but it is a false alarm
-         * as NativePRNG is created in NONBlocking mode (i.e. it is using /dev/urandom)
-         */
-        BlockHound.builder()
-                .allowBlockingCallsInside("org.springframework.util.MimeTypeUtils",
-                        "generateMultipartBoundary").install();
-
-    }
 
     @BeforeEach
     void initialize() throws IOException {
@@ -179,11 +167,11 @@ class AssemblylineClientTest {
             assertEquals(expectedPath, actualRequest.getPath());
 
             MockHttpServletRequest requestContext = new MockHttpServletRequest("POST", actualRequest.getRequestUrl().uri().toString());
-            requestContext.setCharacterEncoding(actualRequest.getHeader("Content-Type"));
+            requestContext.setContentType(actualRequest.getHeader("Content-Type"));
             requestContext.setContent(actualRequest.getBody().readByteArray());
             actualRequest.getHeaders().toMultimap().forEach((e, v) -> requestContext.addHeader(e, v.get(0)));
-            final FileItemFactory factory = new DiskFileItemFactory();
-            final ServletFileUpload upload = new ServletFileUpload(factory);
+            final FileItemFactory factory = DiskFileItemFactory.builder().get();
+            final JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
             final List<FileItem> items = upload.parseRequest(requestContext);
             FileItem binary = items.get(0);
             FileItem json = items.get(1);

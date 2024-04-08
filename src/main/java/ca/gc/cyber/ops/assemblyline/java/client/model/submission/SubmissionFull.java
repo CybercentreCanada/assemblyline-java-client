@@ -27,7 +27,6 @@ import java.util.Map;
  * </ul>
  */
 @Value
-@EqualsAndHashCode(callSuper = true)
 @Jacksonized
 @SuperBuilder
 public class SubmissionFull extends SubmissionBase {

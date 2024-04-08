@@ -47,8 +47,7 @@ public class IngestSubmissionResponse {
     IngestSubmission submission;
 
     @Value
-    @EqualsAndHashCode(callSuper = true)
-    @Jacksonized
+        @Jacksonized
     @SuperBuilder
     public static class IngestSubmission extends SubmissionBase {
         /**
