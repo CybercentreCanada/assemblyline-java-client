@@ -4,3 +4,7 @@
 .idea/
 **.iml
 target/
+.vscode/
+.mvn/
+mvnw
+mvnw.cmd
