@@ -6,7 +6,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.Map;
 
-
 @SuperBuilder
 @Data
 @NoArgsConstructor
@@ -24,4 +23,8 @@ public class SubmitBase {
      * Submission Parameters
      */
     private Map<String, Object> params;
+    /**
+     * Submission profile name
+     */
+    private String submissionProfile;
 }
