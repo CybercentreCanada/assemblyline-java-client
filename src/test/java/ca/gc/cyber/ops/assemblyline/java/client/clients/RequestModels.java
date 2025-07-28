@@ -44,6 +44,7 @@ public class RequestModels {
                 .sha256("abc256")
                 .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                 .params(Map.of("param1", "value1"))
+                .submissionProfile("static")
                 .name("meta data")
                 .generateAlert(true)
                 .notificationQueue("notificationQueue")
@@ -56,6 +57,7 @@ public class RequestModels {
                 .sha256("abc256")
                 .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                 .params(Map.of("param1", "value1"))
+                .submissionProfile("static")
                 .name("meta data")
                 .build();
     }
@@ -71,6 +73,7 @@ public class RequestModels {
                 .metadata(IngestBase.builder()
                         .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                         .params(Map.of("param1", "value1"))
+                        .submissionProfile("static")
                         .name("meta data")
                         .generateAlert(true)
                         .notificationQueue("notificationQueue")
@@ -86,6 +89,7 @@ public class RequestModels {
                 .metadata(IngestBase.builder()
                         .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                         .params(Map.of("param1", "value1"))
+                        .submissionProfile("static")
                         .name("meta data")
                         .generateAlert(true)
                         .notificationQueue("notificationQueue")
@@ -113,6 +117,7 @@ public class RequestModels {
                 .metadata(SubmitMetadata.builder()
                         .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                         .params(Map.of("param1", "value1"))
+                        .submissionProfile("static")
                         .name("meta data")
                         .build())
                 .build();
@@ -127,6 +132,7 @@ public class RequestModels {
                 .url("/test/url.com")
                 .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                 .params(Map.of("param1", "value1"))
+                .submissionProfile("static")
                 .name("meta data")
                 .generateAlert(true)
                 .notificationQueue("notificationQueue")
@@ -143,6 +149,7 @@ public class RequestModels {
                 .url("/test/url.com")
                 .metadata(Map.of("key", "value", "key2", new AssemblylineClientTest.MetadataObjectTest()))
                 .params(Map.of("param1", "value1"))
+                .submissionProfile("static")
                 .name("meta data")
                 .build();
     }

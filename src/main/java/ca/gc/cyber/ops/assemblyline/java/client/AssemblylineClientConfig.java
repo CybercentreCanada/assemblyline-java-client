@@ -8,7 +8,6 @@ import ca.gc.cyber.ops.assemblyline.java.client.authentication.PasswordAuthentic
 import ca.gc.cyber.ops.assemblyline.java.client.clients.AssemblylineClient;
 import ca.gc.cyber.ops.assemblyline.java.client.clients.AssemblylineClientProperties;
 import ca.gc.cyber.ops.assemblyline.java.client.clients.IAssemblylineClient;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

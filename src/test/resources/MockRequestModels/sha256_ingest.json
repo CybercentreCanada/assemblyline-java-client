@@ -1,12 +1,13 @@
 {
-  "name":"meta data",
+  "name": "meta data",
   "metadata": {
     "key": "value",
-    "key2":{
+    "key2": {
       "field1": "test1",
       "field2": "test2"
     }
   },
+  "submission_profile": "static",
   "params": {
     "param1": "value1"
   },
