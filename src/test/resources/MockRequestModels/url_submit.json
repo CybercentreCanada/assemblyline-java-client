@@ -8,6 +8,7 @@
       "field2": "test2"
     }
   },
+  "submission_profile": "static",
   "params": {
     "param1": "value1"
   }

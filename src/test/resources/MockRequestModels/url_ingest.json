@@ -11,6 +11,7 @@
   "params": {
     "param1": "value1"
   },
+  "submission_profile": "static",
   "generate_alert": true,
   "notification_queue": "notificationQueue",
   "notification_threshold": 100
