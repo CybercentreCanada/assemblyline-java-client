@@ -185,7 +185,7 @@ class AssemblylineClientTest {
             JSONAssert.assertEquals(expectedJsonRequest, json.getString(), false);
 
 
-        } catch (InterruptedException | FileUploadException | JSONException e) {
+        } catch (InterruptedException | JSONException | IOException e) {
             Assertions.fail(e);
         }
     }
